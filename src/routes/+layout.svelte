@@ -67,14 +67,15 @@
 	<Sidebar projects={data.projects} areas={data.areas} />
 
 	<!-- Main content area — safe-area-inset-top for standalone PWA on notch devices -->
-	<main
-		class="app-main flex-1 overflow-y-auto pt-safe-area pb-16 lg:pb-0"
-	>
+	<main class="app-main flex-1 overflow-y-auto pt-safe-area pb-16 lg:pb-0">
 		{@render children()}
 	</main>
 
 	<!-- Notification bell — fixed top-right, offset for safe-area -->
-	<div class="app-bell fixed right-3 z-40" style="top: max(0.5rem, env(safe-area-inset-top, 0.5rem));">
+	<div
+		class="app-bell fixed right-3 z-40"
+		style="top: max(0.5rem, env(safe-area-inset-top, 0.5rem));"
+	>
 		<NotificationBell bind:this={notificationBellRef} />
 	</div>
 
