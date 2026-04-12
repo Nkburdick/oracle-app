@@ -92,9 +92,13 @@
 	}
 }
 
-/* Safe-area utility — used by root layout, overridable by Tailwind !pt-0 */
+/* Safe-area utility — used by root layout, disabled when chat thread is active */
 .pt-safe-area {
 	padding-top: env(safe-area-inset-top, 0px);
+}
+.pt-safe-area:has([data-chat-thread]) {
+	padding-top: 0;
+	overflow: hidden;
 }
 
 /* Base styles */
