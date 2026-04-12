@@ -471,9 +471,10 @@
 </script>
 
 <div class="flex flex-col h-[100dvh] md:h-full" data-testid="mobile-chat-page" data-chat-thread>
-	<!-- ── Chat Header (AC-18) ──────────────────────────────────────────── -->
+	<!-- ── Chat Header (AC-18) — safe-area-inset-top for standalone PWA ── -->
 	<header
 		class="flex items-center gap-1 px-1 py-1 border-b border-border flex-shrink-0 bg-card min-h-[52px]"
+		style="padding-top: env(safe-area-inset-top, 0px);"
 		data-testid="chat-header"
 	>
 		<!-- Back button (AC-11) — 44×44 touch target -->

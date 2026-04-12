@@ -85,8 +85,9 @@
 }
 
 /* iOS Safari: safe-area support for notch/Dynamic Island devices */
-@supports (padding: env(safe-area-inset-bottom)) {
+@supports (padding: env(safe-area-inset-top)) {
 	:root {
+		--safe-area-top: env(safe-area-inset-top, 0px);
 		--safe-area-bottom: env(safe-area-inset-bottom, 0px);
 	}
 }
