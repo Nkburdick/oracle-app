@@ -11,6 +11,9 @@ services:
       PORT: '3000'
       HOST: '0.0.0.0'
       ORACLE_DATA_PATH: /opt/oracle/data
+      ORACLE_AUTH_USERNAME: ${ORACLE_AUTH_USERNAME}
+      ORACLE_AUTH_PASSWORD: ${ORACLE_AUTH_PASSWORD}
+      ORACLE_AUTH_SECRET: ${ORACLE_AUTH_SECRET}
       TZ: America/Los_Angeles
     volumes:
       - oracle_data:/opt/oracle/data
@@ -25,13 +28,10 @@ services:
       # The container is on multiple networks (oracle-stack_default + root_default);
       # without this, Traefik can pick the wrong one and silently fail to route.
       - 'traefik.docker.network=root_default'
-      # HTTP Basic Auth — users loaded from .env at deploy time.
-      # Required per Warden review (ORACLE#22). App is single-user and contains
-      # private PARA data, so public access is not acceptable.
-      - 'traefik.http.routers.oracle.middlewares=oracle-auth'
-      - 'traefik.http.middlewares.oracle-auth.basicauth.users=${ORACLE_BASIC_AUTH_USERS}'
-      - 'traefik.http.middlewares.oracle-auth.basicauth.realm=Oracle'
-      - 'traefik.http.middlewares.oracle-auth.basicauth.removeheader=true'
+      # Auth is now handled by the app (cookie session) instead of Traefik.
+      # Basic auth removed — it doesn't re-prompt in iOS standalone PWA mode,
+      # causing blank white screen on session expiry (Loom issue 1).
+      # App-level auth: hooks.server.ts checks cookie, redirects to /login.
     healthcheck:
       # Use 127.0.0.1 not localhost — Alpine resolves localhost to ::1 (IPv6),
       # but the SvelteKit Node adapter only binds IPv4 (0.0.0.0). busybox wget
