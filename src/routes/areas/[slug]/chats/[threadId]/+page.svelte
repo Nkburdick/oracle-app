@@ -26,6 +26,7 @@
 	import type { PageData } from './$types.js';
 	import type { Thread, Message } from '$lib/types/chat.js';
 	import { renderChatMarkdown } from '$lib/chat-markdown.js';
+	import PushPrompt from '$lib/components/PushPrompt.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -42,6 +43,10 @@
 	function seedMessages(): Message[] {
 		return data.messages ?? [];
 	}
+
+	// Push prompt
+	let pushPromptRef: PushPrompt | null = $state(null);
+	let hasShownPushPrompt = $state(false);
 
 	// Thread state — local copy so we can apply mutations (rename, promote)
 	// without waiting for a full page reload.
@@ -280,6 +285,11 @@
 			await tick();
 			textareaEl?.focus();
 			reconcileMessages(threadId);
+
+			if (!hasShownPushPrompt) {
+				hasShownPushPrompt = true;
+				pushPromptRef?.show();
+			}
 		} catch (err) {
 			streamingMessageId = null;
 			messages = messages.filter((m) => m.id !== optimisticId && m.id !== assistantId);
@@ -749,6 +759,8 @@
 		</div>
 	</div>
 {/if}
+
+<PushPrompt bind:this={pushPromptRef} />
 
 <style>
 	/* Typing indicator — staggered fade, same as ProjectChats Loom #34. */
