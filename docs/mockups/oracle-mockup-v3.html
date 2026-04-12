@@ -1,0 +1,3117 @@
+<!doctype html>
+<html lang="en" class="dark">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Oracle App — Interactive Mockup v3</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+			rel="stylesheet"
+		/>
+		<script>
+			// Pre-paint theme flash guard
+			(function () {
+				try {
+					var stored = localStorage.getItem('oracle:theme');
+					var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+					var theme = stored || (prefersDark ? 'dark' : 'dark'); // default dark
+					document.documentElement.classList.toggle('dark', theme === 'dark');
+					document.documentElement.classList.toggle('light', theme === 'light');
+				} catch (e) {
+					document.documentElement.classList.add('dark');
+				}
+			})();
+		</script>
+		<style>
+			/* ============================================================
+       DARKMATTER TOKENS — exact OKLCH values from DESIGN_SYSTEM.md
+       ============================================================ */
+			:root {
+				--background: oklch(1 0 0);
+				--foreground: oklch(0.2101 0.0318 264.6645);
+				--card: oklch(1 0 0);
+				--card-foreground: oklch(0.2101 0.0318 264.6645);
+				--popover: oklch(1 0 0);
+				--popover-foreground: oklch(0.2101 0.0318 264.6645);
+				--primary: oklch(0.6716 0.1368 48.513); /* copper #D87943 */
+				--primary-foreground: oklch(1 0 0);
+				--secondary: oklch(0.536 0.0398 196.028); /* teal #527575 */
+				--secondary-foreground: oklch(1 0 0);
+				--muted: oklch(0.967 0.0029 264.5419);
+				--muted-foreground: oklch(0.551 0.0234 264.3637);
+				--accent: oklch(0.9491 0 0);
+				--accent-foreground: oklch(0.2101 0.0318 264.6645);
+				--destructive: oklch(0.6368 0.2078 25.3313);
+				--destructive-foreground: oklch(0.9851 0 0);
+				--border: oklch(0.9276 0.0058 264.5313);
+				--input: oklch(0.9276 0.0058 264.5313);
+				--ring: oklch(0.6716 0.1368 48.513);
+				--radius: 0.75rem;
+				--font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+				--font-code: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
+			}
+
+			html.dark {
+				--background: oklch(0.1797 0.0043 308.1928);
+				--foreground: oklch(0.8109 0 0);
+				--card: oklch(0.2101 0.0318 264.6645);
+				--card-foreground: oklch(0.8109 0 0);
+				--popover: oklch(0.2101 0.0318 264.6645);
+				--popover-foreground: oklch(0.8109 0 0);
+				--primary: oklch(0.7214 0.1337 49.9802);
+				--primary-foreground: oklch(0.1797 0.0043 308.1928);
+				--secondary: oklch(0.594 0.0443 196.0233);
+				--secondary-foreground: oklch(0.9851 0 0);
+				--muted: oklch(0.252 0 0);
+				--muted-foreground: oklch(0.683 0 0);
+				--accent: oklch(0.252 0 0);
+				--accent-foreground: oklch(0.8109 0 0);
+				--border: oklch(0.252 0 0);
+				--input: oklch(0.252 0 0);
+				--ring: oklch(0.7214 0.1337 49.9802);
+			}
+
+			/* ============================================================
+       RESET + BASE
+       ============================================================ */
+			*,
+			*::before,
+			*::after {
+				box-sizing: border-box;
+			}
+			html,
+			body {
+				margin: 0;
+				padding: 0;
+			}
+			body {
+				font-family: var(--font-mono);
+				font-feature-settings: 'ss01', 'cv11';
+				font-size: 14px;
+				line-height: 1.5;
+				background: var(--background);
+				color: var(--foreground);
+				letter-spacing: 0;
+				-webkit-font-smoothing: antialiased;
+			}
+			code,
+			pre,
+			kbd,
+			samp {
+				font-family: var(--font-code);
+			}
+			button {
+				font-family: inherit;
+				font-size: inherit;
+				cursor: pointer;
+			}
+			a {
+				color: inherit;
+				text-decoration: none;
+			}
+			[hidden] {
+				display: none !important;
+			}
+
+			:focus-visible {
+				outline: 2px solid var(--ring);
+				outline-offset: 2px;
+				border-radius: inherit;
+			}
+
+			/* ============================================================
+       PAGE WRAPPER — contains the desktop shell + mobile previews
+       ============================================================ */
+			.page {
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+			}
+
+			.mockup-banner {
+				padding: 14px 24px;
+				border-bottom: 1px solid var(--border);
+				background: var(--background);
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				font-size: 12px;
+				color: var(--muted-foreground);
+			}
+			.mockup-banner strong {
+				color: var(--foreground);
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				font-size: 11px;
+			}
+
+			/* ============================================================
+       DESKTOP SHELL — TWO panels (sidebar + center) — v3 change
+       ============================================================ */
+			.shell {
+				display: grid;
+				grid-template-columns: 260px 1fr;
+				min-height: 800px;
+				height: calc(100vh - 49px);
+				min-height: 720px;
+				background: var(--background);
+			}
+
+			/* -------- SIDEBAR -------- */
+			.sidebar {
+				border-right: 1px solid var(--border);
+				display: flex;
+				flex-direction: column;
+				background: var(--background);
+				min-width: 0;
+			}
+			.sidebar-logo {
+				height: 56px;
+				padding: 0 20px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				border-bottom: 1px solid var(--border);
+				font-size: 16px;
+				font-weight: 700;
+				color: var(--foreground);
+			}
+			.sidebar-logo .brand {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+			}
+			.brand-mark {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 22px;
+				height: 22px;
+				border: 1px solid var(--primary);
+				border-radius: 4px;
+				color: var(--primary);
+				font-size: 11px;
+				font-weight: 700;
+			}
+			.kbd-hint {
+				font-family: var(--font-code);
+				font-size: 10px;
+				padding: 2px 6px;
+				border: 1px solid var(--border);
+				border-radius: 4px;
+				color: var(--muted-foreground);
+				font-weight: 400;
+			}
+
+			.sidebar-search {
+				padding: 12px;
+			}
+			.sidebar-search input {
+				width: 100%;
+				height: 32px;
+				padding: 0 10px;
+				background: transparent;
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				color: var(--muted-foreground);
+				font-family: inherit;
+				font-size: 12px;
+				opacity: 0.6;
+			}
+			.sidebar-search input::placeholder {
+				color: var(--muted-foreground);
+			}
+
+			.sidebar-scroll {
+				flex: 1;
+				overflow-y: auto;
+				padding-bottom: 8px;
+			}
+			.sidebar-scroll::-webkit-scrollbar {
+				width: 4px;
+			}
+			.sidebar-scroll::-webkit-scrollbar-thumb {
+				background: var(--border);
+				border-radius: 2px;
+			}
+
+			.nav-section {
+				padding: 0;
+			}
+			.section-label {
+				padding: 16px 20px 8px;
+				font-size: 11px;
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--muted-foreground);
+			}
+
+			.nav-row {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				height: 32px;
+				padding: 0 20px;
+				border-left: 2px solid transparent;
+				font-size: 13px;
+				color: var(--muted-foreground);
+				transition:
+					background-color 120ms ease-out,
+					color 120ms ease-out;
+				cursor: pointer;
+				text-decoration: none;
+			}
+			.nav-row:hover {
+				background: var(--muted);
+				color: var(--foreground);
+			}
+			.nav-row.active {
+				background: var(--accent);
+				color: var(--foreground);
+				border-left-color: var(--foreground);
+			}
+			/* v3: proper case in nav labels — no forced lowercase */
+			.nav-row .label {
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				flex: 1;
+			}
+			.nav-row .subtitle {
+				font-size: 11px;
+				color: var(--muted-foreground);
+				opacity: 0.7;
+			}
+			.nav-row .icon {
+				width: 14px;
+				height: 14px;
+				flex-shrink: 0;
+				color: currentColor;
+			}
+
+			/* Status indicators — shape + luminance only */
+			.status {
+				width: 6px;
+				height: 6px;
+				flex-shrink: 0;
+				display: inline-block;
+			}
+			.status.active {
+				background: var(--foreground);
+				border-radius: 9999px;
+			}
+			.status.planning {
+				background: transparent;
+				border: 1px solid var(--foreground);
+				border-radius: 9999px;
+			}
+			.status.paused {
+				background: var(--muted-foreground);
+				border-radius: 9999px;
+			}
+			.status.area {
+				background: transparent;
+				border: 1px solid var(--muted-foreground);
+			}
+			.status.complete {
+				background: transparent;
+				width: 8px;
+				height: 8px;
+				position: relative;
+			}
+			.status.complete::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path d='M1 4 L3 6 L7 1' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+				background-repeat: no-repeat;
+				background-size: contain;
+			}
+
+			.sidebar-footer {
+				border-top: 1px solid var(--border);
+				padding: 12px 16px;
+				display: flex;
+				align-items: center;
+				gap: 8px;
+			}
+			.sidebar-footer .nav-row {
+				flex: 1;
+				height: 36px;
+				padding: 0 8px;
+				border-left: none;
+				border-radius: 6px;
+			}
+			.icon-btn {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 36px;
+				height: 36px;
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				background: var(--card);
+				color: var(--primary);
+				transition:
+					background-color 120ms ease-out,
+					color 120ms ease-out;
+			}
+			.icon-btn:hover {
+				background: var(--muted);
+			}
+
+			/* -------- CENTER PANEL -------- */
+			.center {
+				display: flex;
+				flex-direction: column;
+				min-width: 0;
+				overflow: hidden;
+			}
+			.center-scroll {
+				flex: 1;
+				overflow-y: auto;
+			}
+			.center-inner {
+				max-width: 1200px;
+				padding: 32px 40px 80px;
+			}
+
+			/* ============================================================
+       DASHBOARD
+       ============================================================ */
+			.page-title {
+				font-size: 28px;
+				line-height: 1.2;
+				font-weight: 700;
+				color: var(--foreground);
+				margin: 0 0 6px;
+			}
+			.page-subtitle {
+				color: var(--muted-foreground);
+				font-size: 13px;
+				margin: 0 0 28px;
+			}
+
+			.dash-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+				gap: 16px;
+			}
+
+			.project-card {
+				border: 1px solid var(--border);
+				background: var(--card);
+				border-radius: 12px;
+				padding: 20px;
+				display: flex;
+				flex-direction: column;
+				gap: 16px;
+				cursor: pointer;
+				transition:
+					background-color 120ms ease-out,
+					border-color 120ms ease-out;
+				text-align: left;
+				color: inherit;
+			}
+			.project-card:hover {
+				background: var(--muted);
+				border-color: var(--muted-foreground);
+			}
+			.project-card .head {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			/* v3: proper case in card titles */
+			.project-card .head .name {
+				font-size: 14px;
+				font-weight: 600;
+				color: var(--foreground);
+			}
+			.project-card .phase {
+				font-size: 12px;
+				color: var(--muted-foreground);
+				line-height: 1.5;
+				min-height: 2.4em;
+			}
+			.progress {
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+			}
+			.progress-track {
+				height: 4px;
+				width: 100%;
+				background: var(--muted);
+				border-radius: 9999px;
+				overflow: hidden;
+			}
+			.progress-fill {
+				height: 100%;
+				background: var(--primary);
+				border-radius: 9999px;
+			}
+			.progress-meta {
+				display: flex;
+				justify-content: space-between;
+				font-size: 11px;
+				color: var(--muted-foreground);
+				font-variant-numeric: tabular-nums;
+			}
+
+			/* ============================================================
+       PROJECT WORKSPACE — header + tabs
+       ============================================================ */
+			.ws-header {
+				display: flex;
+				align-items: flex-start;
+				justify-content: space-between;
+				gap: 24px;
+				margin-bottom: 8px;
+			}
+			.ws-title-row {
+				display: flex;
+				align-items: center;
+				gap: 14px;
+				flex-wrap: wrap;
+			}
+			.ws-title-row h1 {
+				font-size: 28px;
+				line-height: 1.2;
+				font-weight: 700;
+				margin: 0;
+				color: var(--foreground);
+			}
+			.status-pill {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				padding: 4px 12px;
+				border: 1px solid var(--border);
+				border-radius: 9999px;
+				font-size: 11px;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--foreground);
+				font-weight: 600;
+			}
+			.status-pill .status {
+				width: 6px;
+				height: 6px;
+			}
+
+			.ws-edit-link {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				font-size: 12px;
+				color: var(--muted-foreground);
+				padding: 8px 12px;
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				transition:
+					color 120ms ease-out,
+					background-color 120ms ease-out;
+				white-space: nowrap;
+			}
+			.ws-edit-link:hover {
+				color: var(--foreground);
+				background: var(--muted);
+			}
+			.ws-edit-link .icon {
+				width: 12px;
+				height: 12px;
+			}
+
+			/* Metadata card — v3 lives INSIDE the SOW tab */
+			.meta-card {
+				margin-bottom: 32px;
+				border: 1px solid var(--border);
+				background: var(--card);
+				border-radius: 12px;
+				padding: 20px;
+			}
+			.meta-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+				gap: 16px 32px;
+				font-size: 13px;
+			}
+			/* v3: metadata labels in proper case */
+			.meta-grid dt {
+				font-size: 11px;
+				color: var(--muted-foreground);
+				margin-bottom: 4px;
+				text-transform: uppercase;
+				letter-spacing: 0.06em;
+				font-weight: 600;
+			}
+			.meta-grid dd {
+				margin: 0;
+				color: var(--foreground);
+				font-size: 13px;
+			}
+			.meta-grid dd a {
+				text-decoration: underline;
+				text-decoration-color: var(--border);
+			}
+			.meta-grid dd a:hover {
+				color: var(--primary);
+			}
+
+			.platform-disclosure {
+				margin-top: 20px;
+				padding-top: 16px;
+				border-top: 1px solid var(--border);
+			}
+			.platform-disclosure summary {
+				cursor: pointer;
+				list-style: none;
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				font-size: 11px;
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--muted-foreground);
+			}
+			.platform-disclosure summary::-webkit-details-marker {
+				display: none;
+			}
+			.platform-disclosure summary::before {
+				content: '[+]';
+				font-family: var(--font-code);
+				color: var(--muted-foreground);
+			}
+			.platform-disclosure[open] summary::before {
+				content: '[-]';
+			}
+			.platform-disclosure summary:hover {
+				color: var(--foreground);
+			}
+
+			.platform-table {
+				margin-top: 14px;
+				width: 100%;
+				border-collapse: collapse;
+				font-size: 12px;
+			}
+			.platform-table td {
+				padding: 6px 12px 6px 0;
+				border-bottom: 1px solid var(--border);
+				vertical-align: top;
+			}
+			.platform-table tr:last-child td {
+				border-bottom: none;
+			}
+			/* slug-style keys stay lowercase as data */
+			.platform-table td:first-child {
+				color: var(--muted-foreground);
+				width: 130px;
+				font-family: var(--font-code);
+				font-size: 11px;
+			}
+			.platform-table code {
+				font-family: var(--font-code);
+				font-size: 11px;
+				background: var(--muted);
+				border: 1px solid var(--border);
+				padding: 1px 6px;
+				border-radius: 4px;
+				color: var(--foreground);
+			}
+			.platform-table a {
+				text-decoration: underline;
+				text-decoration-color: var(--border);
+			}
+			.platform-table a:hover {
+				color: var(--primary);
+			}
+
+			/* Tab bar */
+			.tab-bar {
+				display: flex;
+				border-bottom: 1px solid var(--border);
+				margin-top: 28px;
+			}
+			.tab {
+				padding: 14px 20px;
+				font-size: 13px;
+				font-weight: 500;
+				color: var(--muted-foreground);
+				border-bottom: 2px solid transparent;
+				transition:
+					color 120ms ease-out,
+					border-color 120ms ease-out;
+				background: none;
+				border-left: none;
+				border-right: none;
+				border-top: none;
+				cursor: pointer;
+			}
+			.tab:hover {
+				color: var(--foreground);
+			}
+			/* CONFIRMED: copper underline on the active tab */
+			.tab.active {
+				color: var(--foreground);
+				border-bottom-color: var(--primary);
+			}
+			.tab[aria-disabled='true'] {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+
+			.tab-panel {
+				padding-top: 28px;
+			}
+
+			/* ============================================================
+       PROSE — for SOW
+       ============================================================ */
+			.prose {
+				font-family: var(--font-mono);
+				font-size: 14px;
+				line-height: 1.65;
+				color: var(--muted-foreground);
+				max-width: 78ch;
+			}
+			.prose > * + * {
+				margin-top: 1rem;
+			}
+			.prose h2 {
+				font-size: 20px;
+				line-height: 1.3;
+				font-weight: 600;
+				color: var(--foreground);
+				margin-top: 40px;
+				margin-bottom: 16px;
+				padding-bottom: 8px;
+				border-bottom: 1px solid var(--border);
+			}
+			.prose h3 {
+				font-size: 16px;
+				font-weight: 600;
+				color: var(--foreground);
+				margin-top: 24px;
+				margin-bottom: 12px;
+			}
+			.prose p {
+				margin: 0;
+				color: var(--muted-foreground);
+			}
+			.prose ul {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+			}
+			.prose ul li {
+				position: relative;
+				padding-left: 18px;
+				margin-top: 6px;
+			}
+			.prose ul li::before {
+				content: '•';
+				position: absolute;
+				left: 0;
+				color: var(--muted-foreground);
+			}
+			.prose ol {
+				padding-left: 24px;
+				margin: 0;
+			}
+			.prose ol li::marker {
+				color: var(--muted-foreground);
+			}
+			.prose code {
+				font-family: var(--font-code);
+				font-size: 12px;
+				background: var(--muted);
+				border: 1px solid var(--border);
+				padding: 1px 6px;
+				border-radius: 4px;
+				color: var(--foreground);
+			}
+			.prose pre {
+				font-family: var(--font-code);
+				background: var(--card);
+				border: 1px solid var(--border);
+				border-radius: 12px;
+				padding: 16px;
+				font-size: 12px;
+				line-height: 1.65;
+				overflow-x: auto;
+				color: var(--muted-foreground);
+			}
+			.prose blockquote {
+				border-left: 2px solid var(--border);
+				padding-left: 16px;
+				color: var(--muted-foreground);
+				font-style: italic;
+			}
+			.prose a {
+				color: var(--foreground);
+				text-decoration: underline;
+				text-decoration-color: var(--border);
+			}
+			.prose a:hover {
+				color: var(--primary);
+				text-decoration-color: var(--primary);
+			}
+
+			/* DoD checkboxes */
+			.dod {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+			}
+			.dod li {
+				display: flex;
+				align-items: flex-start;
+				gap: 12px;
+				padding-left: 0 !important;
+			}
+			.dod li::before {
+				content: none !important;
+			}
+			.dod-check {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 16px;
+				height: 16px;
+				flex-shrink: 0;
+				border: 1px solid var(--border);
+				background: var(--card);
+				border-radius: 4px;
+				margin-top: 2px;
+			}
+			.dod-check.checked {
+				background: var(--foreground);
+				border-color: var(--foreground);
+			}
+			.dod-check.checked::after {
+				content: '';
+				width: 9px;
+				height: 9px;
+				background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><path d='M1.5 5 L4 7.5 L8.5 2' stroke='black' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+				background-repeat: no-repeat;
+			}
+			html.dark .dod-check.checked::after {
+				background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><path d='M1.5 5 L4 7.5 L8.5 2' stroke='%2315141B' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+			}
+			.dod-text {
+				color: var(--muted-foreground);
+				font-size: 13px;
+				line-height: 1.6;
+			}
+			.dod li.done .dod-text {
+				opacity: 0.6;
+			}
+
+			/* ============================================================
+       CHATS TAB — multi-thread two-panel layout (v3)
+       ============================================================ */
+			.chats-shell {
+				display: grid;
+				grid-template-columns: 220px 1fr;
+				border: 1px solid var(--border);
+				border-radius: 12px;
+				background: var(--card);
+				overflow: hidden;
+				/* tall enough to demonstrate sticky-input scroll behavior */
+				height: 640px;
+			}
+
+			/* -- Thread list (left sub-panel) -- */
+			.threads-panel {
+				border-right: 1px solid var(--border);
+				display: flex;
+				flex-direction: column;
+				min-width: 0;
+				background: var(--background);
+			}
+			.threads-header {
+				padding: 14px 16px 8px;
+				font-size: 11px;
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--muted-foreground);
+			}
+			.threads-list {
+				flex: 1;
+				overflow-y: auto;
+				padding: 4px 0 8px;
+			}
+			.threads-list::-webkit-scrollbar {
+				width: 4px;
+			}
+			.threads-list::-webkit-scrollbar-thumb {
+				background: var(--border);
+				border-radius: 2px;
+			}
+
+			.thread-row {
+				display: flex;
+				align-items: flex-start;
+				gap: 10px;
+				padding: 10px 16px;
+				border-left: 2px solid transparent;
+				cursor: pointer;
+				color: var(--muted-foreground);
+				transition:
+					background-color 120ms ease-out,
+					color 120ms ease-out;
+				min-width: 0;
+			}
+			.thread-row:hover {
+				background: var(--muted);
+				color: var(--foreground);
+			}
+			.thread-row.active {
+				background: var(--accent);
+				color: var(--foreground);
+				border-left-color: var(--primary);
+			}
+			.thread-glyph {
+				flex-shrink: 0;
+				width: 12px;
+				text-align: center;
+				font-size: 12px;
+				line-height: 1.35;
+				color: var(--muted-foreground);
+			}
+			.thread-row.active .thread-glyph {
+				color: var(--primary);
+			}
+			.thread-glyph.persistent {
+				color: var(--primary);
+			}
+			.thread-meta {
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+				min-width: 0;
+				flex: 1;
+			}
+			.thread-title {
+				font-size: 12px;
+				font-weight: 500;
+				color: inherit;
+				line-height: 1.35;
+				overflow: hidden;
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+			}
+			.thread-sub {
+				font-size: 10px;
+				color: var(--muted-foreground);
+				opacity: 0.85;
+			}
+
+			.threads-footer {
+				border-top: 1px solid var(--border);
+				padding: 10px;
+			}
+			.new-thread-btn {
+				width: 100%;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				gap: 6px;
+				padding: 8px 10px;
+				background: transparent;
+				color: var(--primary);
+				border: 1px dashed var(--border);
+				border-radius: 8px;
+				font-family: inherit;
+				font-size: 11px;
+				font-weight: 600;
+				transition:
+					background-color 120ms ease-out,
+					border-color 120ms ease-out;
+			}
+			.new-thread-btn:hover {
+				background: var(--muted);
+				border-color: var(--primary);
+			}
+
+			/* -- Active thread (right sub-panel) -- */
+			.thread-panel {
+				display: flex;
+				flex-direction: column;
+				min-width: 0;
+				min-height: 0;
+				background: var(--background);
+			}
+			.thread-header {
+				padding: 14px 20px;
+				border-bottom: 1px solid var(--border);
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 12px;
+				flex-shrink: 0;
+			}
+			.thread-header .thread-title-row {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				min-width: 0;
+			}
+			.thread-header .thread-title-row .glyph {
+				color: var(--primary);
+				font-size: 14px;
+			}
+			.thread-header h3 {
+				margin: 0;
+				font-size: 14px;
+				font-weight: 600;
+				color: var(--foreground);
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.thread-header .thread-meta-line {
+				font-size: 11px;
+				color: var(--muted-foreground);
+				white-space: nowrap;
+			}
+
+			.thread-messages {
+				flex: 1;
+				overflow-y: auto;
+				padding: 20px 24px;
+				display: flex;
+				flex-direction: column;
+				gap: 16px;
+				min-height: 0;
+			}
+			.thread-messages::-webkit-scrollbar {
+				width: 6px;
+			}
+			.thread-messages::-webkit-scrollbar-thumb {
+				background: var(--border);
+				border-radius: 3px;
+			}
+
+			.msg {
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+				max-width: 78%;
+			}
+			.msg .who {
+				font-size: 11px;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--muted-foreground);
+				font-weight: 600;
+			}
+			.msg .bubble {
+				padding: 12px 16px;
+				border: 1px solid var(--border);
+				border-radius: 12px;
+				font-size: 13px;
+				line-height: 1.65;
+				color: var(--foreground);
+			}
+			.msg.them {
+				align-self: flex-start;
+			}
+			.msg.them .bubble {
+				background: var(--muted);
+			}
+			.msg.me {
+				align-self: flex-end;
+				align-items: flex-end;
+			}
+			.msg.me .bubble {
+				background: var(--card);
+			}
+			.msg .meta {
+				font-size: 10px;
+				color: var(--muted-foreground);
+			}
+
+			/* Sticky input — does NOT scroll with messages */
+			.thread-input {
+				border-top: 1px solid var(--border);
+				padding: 14px 16px;
+				background: var(--background);
+				display: flex;
+				gap: 12px;
+				align-items: center;
+				flex-shrink: 0;
+			}
+			.thread-input .input-wrap {
+				flex: 1;
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				padding: 10px 14px;
+				border: 1px solid var(--border);
+				border-radius: 10px;
+				background: var(--card);
+				opacity: 0.65;
+			}
+			.thread-input input {
+				flex: 1;
+				background: transparent;
+				border: none;
+				outline: none;
+				color: var(--foreground);
+				font-family: inherit;
+				font-size: 13px;
+			}
+			.thread-input input::placeholder {
+				color: var(--muted-foreground);
+			}
+			.thread-input .icon-inline {
+				width: 14px;
+				height: 14px;
+				color: var(--muted-foreground);
+				flex-shrink: 0;
+			}
+			.thread-input .phase2-tag {
+				font-size: 9px;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--secondary);
+				border: 1px solid var(--secondary);
+				border-radius: 4px;
+				padding: 2px 6px;
+				font-weight: 600;
+				flex-shrink: 0;
+			}
+
+			.btn-primary {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 10px 16px;
+				background: var(--primary);
+				color: var(--primary-foreground);
+				border: 1px solid var(--primary);
+				border-radius: 10px;
+				font-family: inherit;
+				font-size: 12px;
+				font-weight: 600;
+				transition: filter 120ms ease-out;
+				flex-shrink: 0;
+			}
+			.btn-primary:hover {
+				filter: brightness(1.08);
+			}
+			.btn-primary[disabled] {
+				opacity: 0.55;
+				cursor: not-allowed;
+			}
+
+			.btn-outline {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 8px 14px;
+				background: transparent;
+				color: var(--primary);
+				border: 1px solid var(--primary);
+				border-radius: 8px;
+				font-family: inherit;
+				font-size: 12px;
+				font-weight: 600;
+				transition: background-color 120ms ease-out;
+			}
+			.btn-outline:hover {
+				background: var(--muted);
+			}
+
+			.phase2-badge {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				padding: 4px 10px;
+				border: 1px solid var(--secondary);
+				color: var(--secondary);
+				border-radius: 6px;
+				font-size: 10px;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				font-weight: 600;
+			}
+
+			/* ============================================================
+       ARTIFACTS TAB
+       ============================================================ */
+			.artifacts-toolbar {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				margin-bottom: 24px;
+				gap: 16px;
+			}
+			.artifacts-toolbar .left {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				font-size: 12px;
+				color: var(--muted-foreground);
+			}
+			.artifact-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+				gap: 14px;
+			}
+			.artifact-card {
+				border: 1px solid var(--border);
+				background: var(--card);
+				border-radius: 12px;
+				padding: 16px;
+				display: flex;
+				flex-direction: column;
+				gap: 12px;
+				transition:
+					background-color 120ms ease-out,
+					border-color 120ms ease-out;
+				cursor: pointer;
+			}
+			.artifact-card:hover {
+				background: var(--muted);
+				border-color: var(--muted-foreground);
+			}
+			.artifact-card .top {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.artifact-icon {
+				width: 36px;
+				height: 36px;
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				color: var(--muted-foreground);
+				flex-shrink: 0;
+			}
+			.artifact-card .name {
+				font-size: 13px;
+				color: var(--foreground);
+				font-weight: 500;
+				word-break: break-all;
+			}
+			.artifact-card .meta {
+				font-size: 11px;
+				color: var(--muted-foreground);
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+			}
+			.artifact-card .footer {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding-top: 10px;
+				border-top: 1px solid var(--border);
+				font-size: 11px;
+				color: var(--muted-foreground);
+			}
+			.sync-tag {
+				display: inline-flex;
+				align-items: center;
+				gap: 4px;
+				color: var(--muted-foreground);
+			}
+			.sync-tag .icon {
+				width: 11px;
+				height: 11px;
+			}
+
+			/* ============================================================
+       MOBILE PREVIEWS — phone frames
+       ============================================================ */
+			.mobile-section {
+				padding: 60px 24px 80px;
+				border-top: 1px solid var(--border);
+				background: var(--background);
+			}
+			.mobile-section-header {
+				max-width: 1280px;
+				margin: 0 auto 40px;
+			}
+			.mobile-section-header h2 {
+				font-size: 20px;
+				font-weight: 600;
+				color: var(--foreground);
+				margin: 0 0 6px;
+			}
+			.mobile-section-header p {
+				font-size: 13px;
+				color: var(--muted-foreground);
+				margin: 0;
+			}
+
+			.phone-rack {
+				display: flex;
+				gap: 40px;
+				justify-content: center;
+				flex-wrap: wrap;
+				max-width: 1280px;
+				margin: 0 auto;
+			}
+			.phone {
+				width: 320px;
+				height: 660px;
+				border: 8px solid var(--card);
+				border-radius: 36px;
+				box-shadow: 0 0 0 1px var(--border);
+				background: var(--background);
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+				position: relative;
+			}
+			.phone::before {
+				content: '';
+				position: absolute;
+				top: 6px;
+				left: 50%;
+				transform: translateX(-50%);
+				width: 80px;
+				height: 18px;
+				background: var(--card);
+				border-radius: 0 0 14px 14px;
+				z-index: 5;
+			}
+			.phone-label {
+				text-align: center;
+				font-size: 11px;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--muted-foreground);
+				margin-top: 14px;
+				font-weight: 600;
+			}
+			.phone-screen {
+				flex: 1;
+				overflow-y: auto;
+				padding-top: 28px;
+				display: flex;
+				flex-direction: column;
+			}
+			.phone-screen::-webkit-scrollbar {
+				width: 0;
+			}
+
+			.mobile-header {
+				padding: 12px 16px;
+				border-bottom: 1px solid var(--border);
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				min-height: 48px;
+			}
+			.mobile-header .title {
+				font-size: 14px;
+				font-weight: 600;
+				color: var(--foreground);
+				flex: 1;
+			}
+			.mobile-header .back {
+				width: 28px;
+				height: 28px;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				color: var(--muted-foreground);
+				border: 1px solid var(--border);
+				border-radius: 6px;
+			}
+
+			.mobile-body {
+				flex: 1;
+				padding: 16px;
+				display: flex;
+				flex-direction: column;
+				gap: 12px;
+				overflow-y: auto;
+			}
+
+			.mobile-tabbar {
+				display: grid;
+				grid-template-columns: repeat(4, 1fr);
+				border-top: 1px solid var(--border);
+				background: var(--background);
+			}
+			.mobile-tabbar button {
+				background: none;
+				border: none;
+				padding: 10px 0 14px;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 4px;
+				font-size: 10px;
+				color: var(--muted-foreground);
+				font-family: inherit;
+			}
+			.mobile-tabbar button.active {
+				color: var(--foreground);
+			}
+			.mobile-tabbar button .icon {
+				width: 18px;
+				height: 18px;
+			}
+
+			.mobile-project-row {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				padding: 14px 16px;
+				border: 1px solid var(--border);
+				border-radius: 10px;
+				background: var(--card);
+			}
+			/* v3: proper case in mobile rows */
+			.mobile-project-row .name {
+				font-size: 13px;
+				color: var(--foreground);
+				flex: 1;
+			}
+			.mobile-project-row .phase {
+				font-size: 10px;
+				color: var(--muted-foreground);
+			}
+			.mobile-project-row .chev {
+				width: 14px;
+				height: 14px;
+				color: var(--muted-foreground);
+			}
+
+			.mobile-card {
+				border: 1px solid var(--border);
+				background: var(--card);
+				border-radius: 10px;
+				padding: 14px;
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			}
+			/* v3: proper case in mobile cards */
+			.mobile-card .name {
+				font-size: 13px;
+				font-weight: 600;
+				color: var(--foreground);
+			}
+			.mobile-card .phase {
+				font-size: 11px;
+				color: var(--muted-foreground);
+				min-height: 1.4em;
+			}
+
+			.mobile-section-label {
+				font-size: 10px;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--muted-foreground);
+				font-weight: 600;
+				padding: 4px 0 8px;
+			}
+
+			.mobile-tab-bar {
+				display: flex;
+				border-bottom: 1px solid var(--border);
+			}
+			.mobile-tab-bar .tab {
+				flex: 1;
+				padding: 10px 0;
+				font-size: 11px;
+				text-align: center;
+			}
+
+			.mobile-status-pill {
+				display: inline-flex;
+				align-items: center;
+				gap: 4px;
+				padding: 2px 8px;
+				border: 1px solid var(--border);
+				border-radius: 9999px;
+				font-size: 9px;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--foreground);
+				font-weight: 600;
+			}
+
+			/* ============================================================
+       VIEW SWITCHING
+       ============================================================ */
+			.view {
+				display: none;
+			}
+			.view.is-active {
+				display: block;
+			}
+
+			/* ============================================================
+       RESPONSIVE
+       ============================================================ */
+			@media (max-width: 1180px) {
+				.shell {
+					grid-template-columns: 240px 1fr;
+				}
+				.chats-shell {
+					grid-template-columns: 200px 1fr;
+				}
+			}
+			@media (max-width: 860px) {
+				.shell {
+					grid-template-columns: 1fr;
+				}
+				.sidebar {
+					display: none;
+				}
+				.center-inner {
+					padding: 24px;
+				}
+				.chats-shell {
+					grid-template-columns: 1fr;
+					height: 560px;
+				}
+				.threads-panel {
+					display: none;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="page">
+			<!-- =============== TOP BANNER =============== -->
+			<div class="mockup-banner">
+				<div>
+					<strong>Oracle Mockup v3</strong> &nbsp;·&nbsp; Two-panel shell · multi-thread chat ·
+					proper-case labels
+				</div>
+				<div>StrideMind AI · Darkmatter</div>
+			</div>
+
+			<!-- =============== DESKTOP SHELL =============== -->
+			<div class="shell">
+				<!-- ========== SIDEBAR ========== -->
+				<aside class="sidebar">
+					<div class="sidebar-logo">
+						<div class="brand">
+							<span class="brand-mark">O</span>
+							<span>Oracle</span>
+						</div>
+						<span class="kbd-hint">⌘K</span>
+					</div>
+
+					<div class="sidebar-search">
+						<input type="text" placeholder="Search…" disabled />
+					</div>
+
+					<div class="sidebar-scroll">
+						<nav class="nav-section">
+							<a class="nav-row" data-target="dashboard" href="#dashboard">
+								<i data-lucide="layout-dashboard" class="icon"></i>
+								<span class="label">Dashboard</span>
+							</a>
+						</nav>
+
+						<nav class="nav-section">
+							<div class="section-label">[PROJECTS]</div>
+							<a class="nav-row" data-target="sow" href="#stridemind">
+								<span class="status active"></span>
+								<span class="label">StrideMind AI</span>
+								<span class="subtitle">phase 1</span>
+							</a>
+							<a class="nav-row" href="#pennyworth">
+								<span class="status active"></span>
+								<span class="label">Pennyworth</span>
+								<span class="subtitle">phase 3</span>
+							</a>
+							<a class="nav-row" href="#aptoforge">
+								<span class="status planning"></span>
+								<span class="label">AptoForge</span>
+								<span class="subtitle">planning</span>
+							</a>
+							<a class="nav-row" href="#odoo">
+								<span class="status paused"></span>
+								<span class="label">PSI Odoo Migration</span>
+								<span class="subtitle">paused</span>
+							</a>
+							<a class="nav-row" href="#docubot">
+								<span class="status complete"></span>
+								<span class="label">DocuBot</span>
+								<span class="subtitle">shipped</span>
+							</a>
+							<a class="nav-row" href="#aptoflow">
+								<span class="status active"></span>
+								<span class="label">AptoFlow</span>
+								<span class="subtitle">phase 1</span>
+							</a>
+						</nav>
+
+						<nav class="nav-section">
+							<div class="section-label">[AREAS]</div>
+							<a class="nav-row" href="#alfred">
+								<span class="status area"></span>
+								<span class="label">Alfred</span>
+							</a>
+							<a class="nav-row" href="#psi">
+								<span class="status area"></span>
+								<span class="label">PSI Operations</span>
+							</a>
+							<a class="nav-row" href="#health">
+								<span class="status area"></span>
+								<span class="label">Health &amp; Fitness</span>
+							</a>
+							<a class="nav-row" href="#family">
+								<span class="status area"></span>
+								<span class="label">Family</span>
+							</a>
+							<a class="nav-row" href="#finance">
+								<span class="status area"></span>
+								<span class="label">Finance</span>
+							</a>
+						</nav>
+					</div>
+
+					<div class="sidebar-footer">
+						<a class="nav-row" href="#settings">
+							<i data-lucide="settings" class="icon"></i>
+							<span class="label">Settings</span>
+						</a>
+						<button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+							<i data-lucide="moon" class="icon" id="theme-icon"></i>
+						</button>
+					</div>
+				</aside>
+
+				<!-- ========== CENTER ========== -->
+				<main class="center">
+					<div class="center-scroll">
+						<div class="center-inner">
+							<!-- ============ DASHBOARD VIEW ============ -->
+							<section class="view is-active" data-view="dashboard">
+								<h1 class="page-title">Dashboard</h1>
+								<p class="page-subtitle">
+									Where am I on each project. Click any card to open the workspace.
+								</p>
+
+								<div class="dash-grid">
+									<button class="project-card" data-target="sow">
+										<div class="head">
+											<span class="status active"></span>
+											<span class="name">StrideMind AI</span>
+										</div>
+										<div class="phase">Phase 1 — Team Comms MVP</div>
+										<div class="progress">
+											<div class="progress-track">
+												<div class="progress-fill" style="width: 24%"></div>
+											</div>
+											<div class="progress-meta"><span>4 / 17 done</span><span>24%</span></div>
+										</div>
+									</button>
+
+									<button class="project-card">
+										<div class="head">
+											<span class="status active"></span>
+											<span class="name">Pennyworth</span>
+										</div>
+										<div class="phase">Phase 3 — Oracle as App</div>
+										<div class="progress">
+											<div class="progress-track">
+												<div class="progress-fill" style="width: 68%"></div>
+											</div>
+											<div class="progress-meta"><span>17 / 25 done</span><span>68%</span></div>
+										</div>
+									</button>
+
+									<button class="project-card">
+										<div class="head">
+											<span class="status planning"></span>
+											<span class="name">AptoForge</span>
+										</div>
+										<div class="phase">Planning — Build Council scaffold</div>
+										<div class="progress">
+											<div class="progress-track">
+												<div class="progress-fill" style="width: 12%"></div>
+											</div>
+											<div class="progress-meta"><span>2 / 17 done</span><span>12%</span></div>
+										</div>
+									</button>
+
+									<button class="project-card">
+										<div class="head">
+											<span class="status paused"></span>
+											<span class="name">PSI Odoo Migration</span>
+										</div>
+										<div class="phase">Paused — PO migration shipped</div>
+										<div class="progress">
+											<div class="progress-track">
+												<div class="progress-fill" style="width: 81%"></div>
+											</div>
+											<div class="progress-meta"><span>22 / 27 done</span><span>81%</span></div>
+										</div>
+									</button>
+
+									<button class="project-card">
+										<div class="head">
+											<span class="status complete"></span>
+											<span class="name">DocuBot</span>
+										</div>
+										<div class="phase">Shipped 2026-04-03</div>
+										<div class="progress">
+											<div class="progress-track">
+												<div class="progress-fill" style="width: 100%"></div>
+											</div>
+											<div class="progress-meta"><span>14 / 14 done</span><span>100%</span></div>
+										</div>
+									</button>
+
+									<button class="project-card">
+										<div class="head">
+											<span class="status active"></span>
+											<span class="name">AptoFlow</span>
+										</div>
+										<div class="phase">Phase 1 — LinkedIn reposter</div>
+										<div class="progress">
+											<div class="progress-track">
+												<div class="progress-fill" style="width: 45%"></div>
+											</div>
+											<div class="progress-meta"><span>9 / 20 done</span><span>45%</span></div>
+										</div>
+									</button>
+								</div>
+							</section>
+
+							<!-- ============ PROJECT WORKSPACE ============ -->
+							<section class="view" data-view="sow">
+								<!-- Header now contains ONLY title + status pill + edit link -->
+								<div class="ws-header">
+									<div>
+										<div class="ws-title-row">
+											<h1>StrideMind AI</h1>
+											<span class="status-pill"><span class="status active"></span>Active</span>
+										</div>
+										<p class="page-subtitle" style="margin-top: 8px">
+											Youth running coach app · PWA · beta with Coach Mike Finley
+										</p>
+									</div>
+									<a
+										class="ws-edit-link"
+										href="https://github.com/Nkburdick/ORACLE/edit/main/Projects/stridemind-ai/PROJECT.md"
+										target="_blank"
+										rel="noopener"
+									>
+										Edit in GitHub
+										<i data-lucide="external-link" class="icon"></i>
+									</a>
+								</div>
+
+								<!-- Tab bar — order: Chats / Artifacts / SOW; SOW is the default landing tab -->
+								<nav class="tab-bar" role="tablist">
+									<button class="tab" role="tab" data-tab="chats">Chats</button>
+									<button class="tab" role="tab" data-tab="artifacts">Artifacts</button>
+									<button class="tab active" role="tab" data-tab="sow">SOW</button>
+								</nav>
+
+								<!-- ===== TAB PANEL: SOW ===== -->
+								<div class="tab-panel" data-panel="sow">
+									<!-- v3: Metadata card moved INSIDE the SOW tab, above the prose -->
+									<div class="meta-card">
+										<dl class="meta-grid">
+											<div>
+												<dt>State</dt>
+												<dd>Active</dd>
+											</div>
+											<div>
+												<dt>Area</dt>
+												<dd><a href="#personal-projects">Personal Projects</a></dd>
+											</div>
+											<div>
+												<dt>Owner</dt>
+												<dd>Nick Burdick</dd>
+											</div>
+											<div>
+												<dt>Created</dt>
+												<dd>2026-03-14</dd>
+											</div>
+											<div>
+												<dt>Phase</dt>
+												<dd>Phase 1 — Team Comms MVP</dd>
+											</div>
+											<div>
+												<dt>Target Date</dt>
+												<dd>2-3 weeks</dd>
+											</div>
+										</dl>
+
+										<details class="platform-disclosure" open>
+											<summary>Platform IDs</summary>
+											<table class="platform-table">
+												<tr>
+													<td>todoist</td>
+													<td>
+														<a
+															href="https://todoist.com/app/project/6fWjwJJQmmMWmjRH"
+															target="_blank"
+															rel="noopener"
+															><code>6fWjwJJQmmMWmjRH</code></a
+														>
+													</td>
+												</tr>
+												<tr>
+													<td>github_repo</td>
+													<td>
+														<a
+															href="https://github.com/Nkburdick/Stridemind"
+															target="_blank"
+															rel="noopener"
+															><code>Nkburdick/Stridemind</code></a
+														>
+													</td>
+												</tr>
+												<tr>
+													<td>oracle_slug</td>
+													<td><code>stridemind-ai</code></td>
+												</tr>
+												<tr>
+													<td>local_code</td>
+													<td><code>~/Code/Stridemind</code></td>
+												</tr>
+												<tr>
+													<td>telegram_topic</td>
+													<td><code>TBD</code></td>
+												</tr>
+												<tr>
+													<td>drive_folder</td>
+													<td><code>TBD</code></td>
+												</tr>
+											</table>
+										</details>
+									</div>
+
+									<article class="prose">
+										<h2>Definition of Done</h2>
+
+										<h3>Phase 1: Team Comms MVP</h3>
+										<ul class="dod">
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text"
+													>Announcements reach all parents via push notification</span
+												>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text"
+													>Delivery confirmation visible to coach (who received, who read)</span
+												>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text">Schedule changes posted and parents notified</span>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text">RSVP system working for events/meets</span>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text">Parent read-only athlete view functional</span>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text">Team join link and invite flow working</span>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text"
+													>Mike Finley actively using StrideMind weekly with his team</span
+												>
+											</li>
+										</ul>
+
+										<h3>Phase 2: Coach Acquisition</h3>
+										<ul class="dod">
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text">Polish based on Mike's feedback from Phase 1</span>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text">Onboarding flow for new coaches (self-serve)</span>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text"
+													>3-5 additional coaches actively using StrideMind</span
+												>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text">Pricing and payment flow live</span>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text">Marketing site / landing page</span>
+											</li>
+										</ul>
+
+										<h3>Decision Gate: Native Apps</h3>
+										<ul class="dod">
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text"
+													>Evaluate PWA limitations based on real usage data</span
+												>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text"
+													>Decision: stay PWA or build native iOS (then Android)</span
+												>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text"
+													>Only proceed if PWA hits a wall on push, offline, or trust</span
+												>
+											</li>
+										</ul>
+
+										<h3>Project Complete When</h3>
+										<ul class="dod">
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text"
+													>5+ coaches actively using StrideMind with their teams</span
+												>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text">Revenue being generated (any amount)</span>
+											</li>
+											<li>
+												<span class="dod-check"></span
+												><span class="dod-text"
+													>At this point, promote to Area with ongoing sub-projects</span
+												>
+											</li>
+										</ul>
+
+										<h2>Scope</h2>
+										<h3>In Scope (Phase 1 — NOW)</h3>
+										<ul>
+											<li>
+												Team communication: announcements, push notifications, delivery confirmation
+											</li>
+											<li>Scheduling: events, schedule changes, RSVPs</li>
+											<li>Parent views: read-only athlete view, join link, family invite</li>
+											<li>PWA push notification reliability (the #1 technical priority)</li>
+											<li>Observation session with Mike using TeamSnap (before more dev work)</li>
+										</ul>
+
+										<h3>In Scope (Phase 2 — LATER)</h3>
+										<ul>
+											<li>Coach onboarding flow</li>
+											<li>Marketing and outreach to other youth running coaches</li>
+											<li>Pricing/payment integration</li>
+											<li>Polish based on Phase 1 feedback</li>
+										</ul>
+
+										<h3>Out of Scope (for now)</h3>
+										<ul>
+											<li>Native iOS/Android app (decision gate, not guaranteed)</li>
+											<li>Training plan builder and periodization tools</li>
+											<li>Advanced analytics and AI coaching features</li>
+											<li>Social media presence management (Phase 2+)</li>
+											<li>Multi-sport support (running only for now)</li>
+										</ul>
+
+										<h2>Context</h2>
+										<p>
+											StrideMind is a youth running coach app that combines training management with
+											team communication. Built as a Next.js PWA. MVP deployed and being beta tested
+											by Coach Mike Finley (Jonah Burdick's cross-country coach), but Mike isn't
+											using it heavily yet.
+										</p>
+										<p>
+											Nick realized StrideMind needs TeamSnap-like team communication features to be
+											genuinely useful — coaches don't just need training tools, they need a
+											reliable way to reach parents. The Council debate (2026-03-16) produced
+											unanimous agreement: comms-first, PWA-only, ship fast, measure delivery
+											confirmation as the single metric that matters.
+										</p>
+
+										<h3>Key Insight from Council</h3>
+										<blockquote>
+											"If a parent says 'I never got that alert,' the app has already failed and you
+											will never get that parent's trust back." — Delivery confirmation is the trust
+											foundation. Everything else is Phase 2.
+										</blockquote>
+
+										<h3>First Actions</h3>
+										<ol>
+											<li>
+												Schedule observation session — watch Mike use TeamSnap, note friction points
+											</li>
+											<li>
+												Triage 27 open GitHub issues — identify the 6-8 that satisfy Phase 1 scope
+											</li>
+											<li>Ship Team Comms MVP in 2-3 weeks</li>
+											<li>Measure: does Mike open StrideMind weekly?</li>
+										</ol>
+
+										<h2>Key Decisions</h2>
+										<ul>
+											<li>
+												2026-03-16: Comms-first MVP — training tools wait for Phase 2 (Council
+												unanimous)
+											</li>
+											<li>2026-03-16: PWA-only — native apps are a decision gate, not a phase</li>
+											<li>2026-03-16: Delivery confirmation is THE metric for Phase 1</li>
+											<li>
+												2026-03-16: Keep as Project, promote to Area when 5+ coaches and revenue
+											</li>
+											<li>2026-03-16: Observe Mike using TeamSnap before writing more code</li>
+										</ul>
+
+										<h2>Current Status</h2>
+										<p>
+											Active development on Team Communication features. Phase 1 comms MVP tasks in
+											Todoist with dates through May 2026. Onboarding wizard, beta invite
+											simplification, and PWA offline caching are the priority build items.
+											White-glove session with Mike Finley is the key unlock.
+										</p>
+
+										<h3>E2E Test Status (as of 2026-03-27)</h3>
+										<p>
+											65/79 Playwright E2E tests passing on
+											<code>feat/team-communication</code> branch. 14 tests skipped due to 6
+											blockers — see GitHub issues <code>#268</code>, <code>#269</code>.
+										</p>
+									</article>
+								</div>
+
+								<!-- ===== TAB PANEL: CHATS — multi-thread two-panel ===== -->
+								<div class="tab-panel" data-panel="chats" hidden>
+									<div
+										style="
+											display: flex;
+											align-items: center;
+											justify-content: space-between;
+											margin-bottom: 18px;
+											gap: 16px;
+											flex-wrap: wrap;
+										"
+									>
+										<div style="font-size: 12px; color: var(--muted-foreground)">
+											Multi-thread workspace · scoped to
+											<code
+												style="
+													font-family: var(--font-code);
+													font-size: 11px;
+													background: var(--muted);
+													border: 1px solid var(--border);
+													padding: 1px 6px;
+													border-radius: 4px;
+													color: var(--foreground);
+												"
+												>stridemind-ai</code
+											>
+											· synced to Pennyworth
+										</div>
+										<span class="phase2-badge">Phase 2 Preview</span>
+									</div>
+
+									<div class="chats-shell">
+										<!-- LEFT SUB-PANEL: thread list -->
+										<aside class="threads-panel">
+											<div class="threads-header">[THREADS]</div>
+											<div class="threads-list" id="threads-list">
+												<div class="thread-row active" data-thread="push-notifs">
+													<span class="thread-glyph persistent">★</span>
+													<div class="thread-meta">
+														<div class="thread-title">Push notification research</div>
+														<div class="thread-sub">14 msgs · 2h ago</div>
+													</div>
+												</div>
+
+												<div class="thread-row" data-thread="coach-mike">
+													<span class="thread-glyph persistent">★</span>
+													<div class="thread-meta">
+														<div class="thread-title">Coach Mike feedback synthesis</div>
+														<div class="thread-sub">28 msgs · yesterday</div>
+													</div>
+												</div>
+
+												<div class="thread-row" data-thread="rsvp-design">
+													<span class="thread-glyph persistent">★</span>
+													<div class="thread-meta">
+														<div class="thread-title">RSVP flow design notes</div>
+														<div class="thread-sub">9 msgs · 2d ago</div>
+													</div>
+												</div>
+
+												<div class="thread-row" data-thread="quick-q">
+													<span class="thread-glyph">·</span>
+													<div class="thread-meta">
+														<div class="thread-title">Quick q 13:42</div>
+														<div class="thread-sub">3 msgs · throwaway</div>
+													</div>
+												</div>
+
+												<div class="thread-row" data-thread="debug-help">
+													<span class="thread-glyph">·</span>
+													<div class="thread-meta">
+														<div class="thread-title">Debug help — Vercel build</div>
+														<div class="thread-sub">6 msgs · throwaway</div>
+													</div>
+												</div>
+
+												<div class="thread-row" data-thread="env-vars">
+													<span class="thread-glyph">·</span>
+													<div class="thread-meta">
+														<div class="thread-title">Quick q 09:18</div>
+														<div class="thread-sub">2 msgs · throwaway</div>
+													</div>
+												</div>
+											</div>
+											<div class="threads-footer">
+												<button class="new-thread-btn" type="button">
+													<i data-lucide="plus" class="icon" style="width: 12px; height: 12px"></i>
+													New thread
+												</button>
+											</div>
+										</aside>
+
+										<!-- RIGHT SUB-PANEL: active thread -->
+										<section class="thread-panel">
+											<header class="thread-header">
+												<div class="thread-title-row">
+													<span class="glyph" id="active-thread-glyph">★</span>
+													<h3 id="active-thread-title">Push notification research</h3>
+												</div>
+												<span class="thread-meta-line" id="active-thread-meta"
+													>Persistent · 14 messages</span
+												>
+											</header>
+
+											<div class="thread-messages" id="thread-messages">
+												<!-- Default: push-notifs thread -->
+												<div class="msg me">
+													<div class="who">Nick · 11:42</div>
+													<div class="bubble">
+														Mike said the push notifications didn't reach two parents on Monday.
+														Need to figure out what broke before our session Friday.
+													</div>
+												</div>
+												<div class="msg them">
+													<div class="who">Pennyworth · 11:42</div>
+													<div class="bubble">
+														Pulled the Vercel logs for that announcement. Both failures are iOS
+														Safari devices that haven't re-granted permission since the iOS 18.4
+														rollout. The PWA push subscriptions silently expired. I see this in
+														three other parents' device records too.
+													</div>
+												</div>
+												<div class="msg them">
+													<div class="who">Pennyworth · 11:43</div>
+													<div class="bubble">
+														iOS 18.4 changed the push subscription expiry behavior. Subscriptions
+														that used to live indefinitely now expire after 30 days of inactivity.
+														Apple buried this in a release note.
+													</div>
+												</div>
+												<div class="msg me">
+													<div class="who">Nick · 11:44</div>
+													<div class="bubble">
+														Confirm — does this break our existing subscriptions? Or only new ones
+														going forward?
+													</div>
+												</div>
+												<div class="msg them">
+													<div class="who">Pennyworth · 11:44</div>
+													<div class="bubble">
+														Existing subscriptions are grandfathered, but the moment a parent's
+														device misses 30 days of pushes (vacation, phone off, etc.) it silently
+														drops. Two of Mike's parents hit exactly that window.
+													</div>
+												</div>
+												<div class="msg them">
+													<div class="who">Pennyworth · 11:45</div>
+													<div class="bubble">
+														Recommendation: ship the subscription health check this week. Background
+														job pings each subscription every 24h, marks expired ones, surfaces a
+														"re-enable notifications" banner to the parent. I drafted the
+														architecture — check the Artifacts tab, file
+														<code>push-notification-architecture.md</code>.
+													</div>
+												</div>
+												<div class="msg me">
+													<div class="who">Nick · 11:47</div>
+													<div class="bubble">
+														Good call. Open a GitHub issue for it under StrideMind, label it
+														phase-1-blocker. Title it "Push subscription health check + re-enable
+														banner".
+													</div>
+												</div>
+												<div class="msg them">
+													<div class="who">Pennyworth · 11:47</div>
+													<div class="bubble">
+														Done. Issue <code>#274</code> created and labeled. Also added a DoD item
+														under Phase 1: "Subscription health check running daily, parents
+														notified if push lapses." Want me to mark the existing "delivery
+														confirmation" item as blocked on this?
+													</div>
+												</div>
+												<div class="msg me">
+													<div class="who">Nick · 11:49</div>
+													<div class="bubble">
+														Yes. And remind me Friday morning to walk Mike through this in our
+														session.
+													</div>
+												</div>
+												<div class="msg them">
+													<div class="who">Pennyworth · 11:49</div>
+													<div class="bubble">
+														Reminder set for Friday 7:30am — "Walk Mike through push subscription
+														health check during session." I'll bundle the architecture doc + the
+														GitHub issue into one summary you can share with him.
+													</div>
+												</div>
+												<div class="msg me">
+													<div class="who">Nick · 13:38</div>
+													<div class="bubble">
+														One more — can you check whether Android Chrome has the same expiry
+														behavior? Don't want to ship a fix that only covers iOS.
+													</div>
+												</div>
+												<div class="msg them">
+													<div class="who">Pennyworth · 13:39</div>
+													<div class="bubble">
+														Checked. Android Chrome subscriptions don't have the 30-day inactivity
+														expiry, but they DO expire if the user clears site data or revokes
+														notification permission in system settings. The health check will catch
+														both Android and iOS failure modes — same job, no extra work.
+													</div>
+												</div>
+												<div class="msg me">
+													<div class="who">Nick · 13:41</div>
+													<div class="bubble">Perfect. Ship it.</div>
+												</div>
+												<div class="msg them">
+													<div class="who">Pennyworth · 13:42</div>
+													<div class="bubble">
+														On it. Issue <code>#274</code> bumped to in-progress, branch
+														<code>fix/push-subscription-health</code> created. ETA EOD tomorrow for
+														a draft PR.
+													</div>
+												</div>
+											</div>
+
+											<div class="thread-input">
+												<div class="input-wrap">
+													<i data-lucide="message-square" class="icon-inline"></i>
+													<input
+														type="text"
+														placeholder="Talk to Pennyworth about StrideMind AI…"
+														disabled
+													/>
+													<span class="phase2-tag" title="Chat is not yet wired up — Phase 2"
+														>Phase 2</span
+													>
+												</div>
+												<button
+													class="btn-primary"
+													disabled
+													title="Phase 2 — chat not yet wired up"
+												>
+													Send
+													<i
+														data-lucide="arrow-up"
+														class="icon"
+														style="width: 12px; height: 12px"
+													></i>
+												</button>
+											</div>
+										</section>
+									</div>
+								</div>
+
+								<!-- ===== TAB PANEL: ARTIFACTS ===== -->
+								<div class="tab-panel" data-panel="artifacts" hidden>
+									<div class="artifacts-toolbar">
+										<div class="left">
+											<i data-lucide="folder" class="icon" style="width: 14px; height: 14px"></i>
+											<span
+												>6 artifacts · synced to
+												<a
+													href="#"
+													style="
+														color: var(--foreground);
+														text-decoration: underline;
+														text-decoration-color: var(--border);
+													"
+													>[01] Projects/StrideMind</a
+												></span
+											>
+										</div>
+										<div style="display: flex; gap: 12px; align-items: center">
+											<span class="phase2-badge">Phase 2 Preview</span>
+											<button class="btn-outline">
+												<i data-lucide="upload" class="icon" style="width: 12px; height: 12px"></i>
+												Upload
+											</button>
+										</div>
+									</div>
+
+									<div class="artifact-grid">
+										<div class="artifact-card">
+											<div class="top">
+												<div class="artifact-icon">
+													<i
+														data-lucide="file-text"
+														class="icon"
+														style="width: 18px; height: 18px"
+													></i>
+												</div>
+												<div style="min-width: 0">
+													<div class="name">TeamSnap-vs-StrideMind-comparison.pdf</div>
+													<div class="meta">
+														<span>2.4 MB · uploaded by Nick</span>
+													</div>
+												</div>
+											</div>
+											<div class="footer">
+												<span class="sync-tag"
+													><i data-lucide="check-circle-2" class="icon"></i>Synced to Drive</span
+												>
+												<span>2026-03-22</span>
+											</div>
+										</div>
+
+										<div class="artifact-card">
+											<div class="top">
+												<div class="artifact-icon">
+													<i
+														data-lucide="file-code"
+														class="icon"
+														style="width: 18px; height: 18px"
+													></i>
+												</div>
+												<div style="min-width: 0">
+													<div class="name">Coach-Mike-feedback-2026-03-28.md</div>
+													<div class="meta">
+														<span>14 KB · created by Pennyworth</span>
+													</div>
+												</div>
+											</div>
+											<div class="footer">
+												<span class="sync-tag"
+													><i data-lucide="check-circle-2" class="icon"></i>Synced to Drive</span
+												>
+												<span>2026-03-28</span>
+											</div>
+										</div>
+
+										<div class="artifact-card">
+											<div class="top">
+												<div class="artifact-icon">
+													<i
+														data-lucide="file-code"
+														class="icon"
+														style="width: 18px; height: 18px"
+													></i>
+												</div>
+												<div style="min-width: 0">
+													<div class="name">push-notification-architecture.md</div>
+													<div class="meta">
+														<span>22 KB · created by Pennyworth</span>
+													</div>
+												</div>
+											</div>
+											<div class="footer">
+												<span class="sync-tag"
+													><i data-lucide="check-circle-2" class="icon"></i>Synced to Drive</span
+												>
+												<span>2026-04-01</span>
+											</div>
+										</div>
+
+										<div class="artifact-card">
+											<div class="top">
+												<div class="artifact-icon">
+													<i data-lucide="image" class="icon" style="width: 18px; height: 18px"></i>
+												</div>
+												<div style="min-width: 0">
+													<div class="name">Mike-screenshot-1.png</div>
+													<div class="meta">
+														<span>684 KB · uploaded by Nick</span>
+													</div>
+												</div>
+											</div>
+											<div class="footer">
+												<span class="sync-tag"
+													><i data-lucide="check-circle-2" class="icon"></i>Synced to Drive</span
+												>
+												<span>2026-03-30</span>
+											</div>
+										</div>
+
+										<div class="artifact-card">
+											<div class="top">
+												<div class="artifact-icon">
+													<i
+														data-lucide="file-spreadsheet"
+														class="icon"
+														style="width: 18px; height: 18px"
+													></i>
+												</div>
+												<div style="min-width: 0">
+													<div class="name">stridemind-pricing-model.xlsx</div>
+													<div class="meta">
+														<span>48 KB · uploaded by Nick</span>
+													</div>
+												</div>
+											</div>
+											<div class="footer">
+												<span class="sync-tag"
+													><i data-lucide="check-circle-2" class="icon"></i>Synced to Drive</span
+												>
+												<span>2026-04-02</span>
+											</div>
+										</div>
+
+										<div class="artifact-card">
+											<div class="top">
+												<div class="artifact-icon">
+													<i
+														data-lucide="file-text"
+														class="icon"
+														style="width: 18px; height: 18px"
+													></i>
+												</div>
+												<div style="min-width: 0">
+													<div class="name">phase1-research-notes.md</div>
+													<div class="meta">
+														<span>9 KB · created by Pennyworth</span>
+													</div>
+												</div>
+											</div>
+											<div class="footer">
+												<span class="sync-tag"
+													><i data-lucide="check-circle-2" class="icon"></i>Synced to Drive</span
+												>
+												<span>2026-04-04</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</section>
+						</div>
+					</div>
+				</main>
+			</div>
+
+			<!-- =============== MOBILE PREVIEWS =============== -->
+			<section class="mobile-section">
+				<div class="mobile-section-header">
+					<h2>Mobile previews</h2>
+					<p>
+						Bottom tab bar, single-column scroll, drilled-in detail with back arrow. Same Darkmatter
+						tokens, scaled for 390×844.
+					</p>
+				</div>
+
+				<div class="phone-rack">
+					<!-- Phone 1: Mobile Dashboard -->
+					<div>
+						<div class="phone">
+							<div class="phone-screen">
+								<div class="mobile-header">
+									<div class="title">Dashboard</div>
+									<i
+										data-lucide="bell"
+										class="icon"
+										style="width: 16px; height: 16px; color: var(--muted-foreground)"
+									></i>
+								</div>
+								<div class="mobile-body">
+									<div class="mobile-card">
+										<div style="display: flex; align-items: center; gap: 8px">
+											<span class="status active"></span>
+											<span class="name">StrideMind AI</span>
+										</div>
+										<div class="phase">Phase 1 — Team Comms MVP</div>
+										<div class="progress">
+											<div class="progress-track">
+												<div class="progress-fill" style="width: 24%"></div>
+											</div>
+											<div class="progress-meta"><span>4 / 17 done</span><span>24%</span></div>
+										</div>
+									</div>
+									<div class="mobile-card">
+										<div style="display: flex; align-items: center; gap: 8px">
+											<span class="status active"></span>
+											<span class="name">Pennyworth</span>
+										</div>
+										<div class="phase">Phase 3 — Oracle as App</div>
+										<div class="progress">
+											<div class="progress-track">
+												<div class="progress-fill" style="width: 68%"></div>
+											</div>
+											<div class="progress-meta"><span>17 / 25 done</span><span>68%</span></div>
+										</div>
+									</div>
+									<div class="mobile-card">
+										<div style="display: flex; align-items: center; gap: 8px">
+											<span class="status planning"></span>
+											<span class="name">AptoForge</span>
+										</div>
+										<div class="phase">Planning — Build Council scaffold</div>
+										<div class="progress">
+											<div class="progress-track">
+												<div class="progress-fill" style="width: 12%"></div>
+											</div>
+											<div class="progress-meta"><span>2 / 17 done</span><span>12%</span></div>
+										</div>
+									</div>
+									<div class="mobile-card">
+										<div style="display: flex; align-items: center; gap: 8px">
+											<span class="status complete"></span>
+											<span class="name">DocuBot</span>
+										</div>
+										<div class="phase">Shipped 2026-04-03</div>
+										<div class="progress">
+											<div class="progress-track">
+												<div class="progress-fill" style="width: 100%"></div>
+											</div>
+											<div class="progress-meta"><span>14 / 14 done</span><span>100%</span></div>
+										</div>
+									</div>
+								</div>
+								<div class="mobile-tabbar">
+									<button class="active">
+										<i data-lucide="layout-dashboard" class="icon"></i>Dashboard
+									</button>
+									<button><i data-lucide="folder-open" class="icon"></i>Projects</button>
+									<button><i data-lucide="square-stack" class="icon"></i>Areas</button>
+									<button><i data-lucide="settings" class="icon"></i>Settings</button>
+								</div>
+							</div>
+						</div>
+						<div class="phone-label">Mobile · Dashboard</div>
+					</div>
+
+					<!-- Phone 2: Mobile Projects List -->
+					<div>
+						<div class="phone">
+							<div class="phone-screen">
+								<div class="mobile-header">
+									<div class="title">Projects</div>
+									<i
+										data-lucide="search"
+										class="icon"
+										style="width: 16px; height: 16px; color: var(--muted-foreground)"
+									></i>
+								</div>
+								<div class="mobile-body">
+									<div class="mobile-section-label">[ACTIVE]</div>
+									<a class="mobile-project-row" href="#">
+										<span class="status active"></span>
+										<span class="name">StrideMind AI</span>
+										<span class="phase">Phase 1</span>
+										<i data-lucide="chevron-right" class="chev"></i>
+									</a>
+									<a class="mobile-project-row" href="#">
+										<span class="status active"></span>
+										<span class="name">Pennyworth</span>
+										<span class="phase">Phase 3</span>
+										<i data-lucide="chevron-right" class="chev"></i>
+									</a>
+									<a class="mobile-project-row" href="#">
+										<span class="status active"></span>
+										<span class="name">AptoFlow</span>
+										<span class="phase">Phase 1</span>
+										<i data-lucide="chevron-right" class="chev"></i>
+									</a>
+
+									<div class="mobile-section-label" style="margin-top: 12px">[PLANNING]</div>
+									<a class="mobile-project-row" href="#">
+										<span class="status planning"></span>
+										<span class="name">AptoForge</span>
+										<span class="phase">Planning</span>
+										<i data-lucide="chevron-right" class="chev"></i>
+									</a>
+
+									<div class="mobile-section-label" style="margin-top: 12px">[PAUSED]</div>
+									<a class="mobile-project-row" href="#">
+										<span class="status paused"></span>
+										<span class="name">PSI Odoo Migration</span>
+										<span class="phase">Paused</span>
+										<i data-lucide="chevron-right" class="chev"></i>
+									</a>
+
+									<div class="mobile-section-label" style="margin-top: 12px">[COMPLETE]</div>
+									<a class="mobile-project-row" href="#">
+										<span class="status complete"></span>
+										<span class="name">DocuBot</span>
+										<span class="phase">Shipped</span>
+										<i data-lucide="chevron-right" class="chev"></i>
+									</a>
+								</div>
+								<div class="mobile-tabbar">
+									<button><i data-lucide="layout-dashboard" class="icon"></i>Dashboard</button>
+									<button class="active">
+										<i data-lucide="folder-open" class="icon"></i>Projects
+									</button>
+									<button><i data-lucide="square-stack" class="icon"></i>Areas</button>
+									<button><i data-lucide="settings" class="icon"></i>Settings</button>
+								</div>
+							</div>
+						</div>
+						<div class="phone-label">Mobile · Projects</div>
+					</div>
+
+					<!-- Phone 3: Mobile Project SOW -->
+					<div>
+						<div class="phone">
+							<div class="phone-screen">
+								<div class="mobile-header">
+									<a class="back" href="#"
+										><i
+											data-lucide="chevron-left"
+											class="icon"
+											style="width: 14px; height: 14px"
+										></i
+									></a>
+									<div class="title" style="display: flex; align-items: center; gap: 8px">
+										StrideMind AI
+										<span class="mobile-status-pill"
+											><span class="status active"></span>Active</span
+										>
+									</div>
+								</div>
+								<div class="mobile-tab-bar">
+									<button class="tab" style="background: none; color: var(--muted-foreground)">
+										Chats
+									</button>
+									<button class="tab" style="background: none; color: var(--muted-foreground)">
+										Artifacts
+									</button>
+									<button class="tab active" style="background: none">SOW</button>
+								</div>
+								<div class="mobile-body">
+									<!-- Mini metadata strip — mirrors v3 desktop pattern (metadata in SOW) -->
+									<div
+										style="
+											border: 1px solid var(--border);
+											border-radius: 10px;
+											padding: 12px;
+											background: var(--card);
+											display: flex;
+											flex-direction: column;
+											gap: 8px;
+										"
+									>
+										<div style="display: flex; justify-content: space-between; font-size: 10px">
+											<span
+												style="
+													color: var(--muted-foreground);
+													text-transform: uppercase;
+													letter-spacing: 0.06em;
+													font-weight: 600;
+												"
+												>Phase</span
+											>
+											<span style="color: var(--foreground)">Phase 1 — Team Comms</span>
+										</div>
+										<div style="display: flex; justify-content: space-between; font-size: 10px">
+											<span
+												style="
+													color: var(--muted-foreground);
+													text-transform: uppercase;
+													letter-spacing: 0.06em;
+													font-weight: 600;
+												"
+												>Owner</span
+											>
+											<span style="color: var(--foreground)">Nick Burdick</span>
+										</div>
+										<div style="display: flex; justify-content: space-between; font-size: 10px">
+											<span
+												style="
+													color: var(--muted-foreground);
+													text-transform: uppercase;
+													letter-spacing: 0.06em;
+													font-weight: 600;
+												"
+												>Target</span
+											>
+											<span style="color: var(--foreground)">2-3 weeks</span>
+										</div>
+									</div>
+
+									<div
+										style="
+											font-size: 13px;
+											color: var(--foreground);
+											font-weight: 600;
+											margin-top: 4px;
+										"
+									>
+										Definition of Done
+									</div>
+
+									<ul class="dod" style="margin: 0">
+										<li>
+											<span class="dod-check"></span
+											><span class="dod-text">Announcements reach all parents via push</span>
+										</li>
+										<li>
+											<span class="dod-check"></span
+											><span class="dod-text">Delivery confirmation visible to coach</span>
+										</li>
+										<li>
+											<span class="dod-check"></span
+											><span class="dod-text">Schedule changes posted, parents notified</span>
+										</li>
+										<li>
+											<span class="dod-check"></span
+											><span class="dod-text">RSVP system working for events/meets</span>
+										</li>
+										<li>
+											<span class="dod-check"></span
+											><span class="dod-text">Parent read-only athlete view functional</span>
+										</li>
+										<li>
+											<span class="dod-check"></span
+											><span class="dod-text">Team join link and invite flow working</span>
+										</li>
+										<li>
+											<span class="dod-check"></span
+											><span class="dod-text">Mike Finley using StrideMind weekly</span>
+										</li>
+									</ul>
+
+									<div
+										style="
+											font-size: 13px;
+											color: var(--foreground);
+											font-weight: 600;
+											margin-top: 12px;
+										"
+									>
+										In Scope (Phase 1)
+									</div>
+									<div style="font-size: 12px; color: var(--muted-foreground); line-height: 1.6">
+										Team comms · scheduling &amp; RSVPs · parent views · PWA push reliability ·
+										TeamSnap observation with Mike.
+									</div>
+
+									<div
+										style="
+											font-size: 13px;
+											color: var(--foreground);
+											font-weight: 600;
+											margin-top: 12px;
+										"
+									>
+										Key Decisions
+									</div>
+									<div style="font-size: 11px; color: var(--muted-foreground); line-height: 1.6">
+										03-16 · Comms-first MVP, training waits<br />
+										03-16 · PWA-only, native is decision gate<br />
+										03-16 · Delivery confirmation is THE metric
+									</div>
+								</div>
+								<div class="mobile-tabbar">
+									<button><i data-lucide="layout-dashboard" class="icon"></i>Dashboard</button>
+									<button class="active">
+										<i data-lucide="folder-open" class="icon"></i>Projects
+									</button>
+									<button><i data-lucide="square-stack" class="icon"></i>Areas</button>
+									<button><i data-lucide="settings" class="icon"></i>Settings</button>
+								</div>
+							</div>
+						</div>
+						<div class="phone-label">Mobile · Project SOW</div>
+					</div>
+				</div>
+			</section>
+		</div>
+
+		<!-- =============== LUCIDE ICONS =============== -->
+		<script src="https://unpkg.com/lucide@latest"></script>
+		<script>
+			function refreshIcons() {
+				if (window.lucide && typeof window.lucide.createIcons === 'function') {
+					window.lucide.createIcons();
+				}
+			}
+
+			// ============== VIEW SWITCHING ==============
+			function setView(name) {
+				document.querySelectorAll('.view').forEach((v) => {
+					v.classList.toggle('is-active', v.dataset.view === name);
+				});
+				document.querySelectorAll('.sidebar .nav-row').forEach((r) => r.classList.remove('active'));
+				const sidebarLink = document.querySelector('.sidebar .nav-row[data-target="' + name + '"]');
+				if (sidebarLink) sidebarLink.classList.add('active');
+				const scroll = document.querySelector('.center-scroll');
+				if (scroll) scroll.scrollTop = 0;
+				refreshIcons();
+			}
+
+			document.querySelectorAll('[data-target]').forEach((el) => {
+				el.addEventListener('click', (e) => {
+					e.preventDefault();
+					const target = el.dataset.target;
+					if (target === 'sow') {
+						setView('sow');
+						setTab('sow');
+					} else if (target === 'dashboard') {
+						setView('dashboard');
+					}
+				});
+			});
+
+			// ============== TAB SWITCHING ==============
+			function setTab(name) {
+				document.querySelectorAll('.tab-bar .tab').forEach((t) => {
+					t.classList.toggle('active', t.dataset.tab === name);
+				});
+				document.querySelectorAll('.tab-panel').forEach((p) => {
+					p.hidden = p.dataset.panel !== name;
+				});
+				// when switching to chats, scroll thread messages to bottom
+				if (name === 'chats') {
+					const msgs = document.getElementById('thread-messages');
+					if (msgs) msgs.scrollTop = msgs.scrollHeight;
+				}
+				refreshIcons();
+			}
+			document.querySelectorAll('.tab-bar .tab').forEach((t) => {
+				t.addEventListener('click', () => setTab(t.dataset.tab));
+			});
+
+			// ============== THREAD SWITCHING ==============
+			// Each thread has its own message set + meta. Persistent threads use ★, throwaways use ·.
+			const THREADS = {
+				'push-notifs': {
+					title: 'Push notification research',
+					glyph: '★',
+					meta: 'Persistent · 14 messages',
+					messages: [
+						{
+							who: 'me',
+							name: 'Nick · 11:42',
+							text: "Mike said the push notifications didn't reach two parents on Monday. Need to figure out what broke before our session Friday."
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 11:42',
+							text: "Pulled the Vercel logs for that announcement. Both failures are iOS Safari devices that haven't re-granted permission since the iOS 18.4 rollout. The PWA push subscriptions silently expired. I see this in three other parents' device records too."
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 11:43',
+							text: 'iOS 18.4 changed the push subscription expiry behavior. Subscriptions that used to live indefinitely now expire after 30 days of inactivity. Apple buried this in a release note.'
+						},
+						{
+							who: 'me',
+							name: 'Nick · 11:44',
+							text: 'Confirm — does this break our existing subscriptions? Or only new ones going forward?'
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 11:44',
+							text: "Existing subscriptions are grandfathered, but the moment a parent's device misses 30 days of pushes (vacation, phone off, etc.) it silently drops. Two of Mike's parents hit exactly that window."
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 11:45',
+							text: 'Recommendation: ship the subscription health check this week. Background job pings each subscription every 24h, marks expired ones, surfaces a "re-enable notifications" banner to the parent. I drafted the architecture — check the Artifacts tab, file <code>push-notification-architecture.md</code>.'
+						},
+						{
+							who: 'me',
+							name: 'Nick · 11:47',
+							text: 'Good call. Open a GitHub issue for it under StrideMind, label it phase-1-blocker. Title it "Push subscription health check + re-enable banner".'
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 11:47',
+							text: 'Done. Issue <code>#274</code> created and labeled. Also added a DoD item under Phase 1: "Subscription health check running daily, parents notified if push lapses." Want me to mark the existing "delivery confirmation" item as blocked on this?'
+						},
+						{
+							who: 'me',
+							name: 'Nick · 11:49',
+							text: 'Yes. And remind me Friday morning to walk Mike through this in our session.'
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 11:49',
+							text: 'Reminder set for Friday 7:30am — "Walk Mike through push subscription health check during session." I\'ll bundle the architecture doc + the GitHub issue into one summary you can share with him.'
+						},
+						{
+							who: 'me',
+							name: 'Nick · 13:38',
+							text: "One more — can you check whether Android Chrome has the same expiry behavior? Don't want to ship a fix that only covers iOS."
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 13:39',
+							text: "Checked. Android Chrome subscriptions don't have the 30-day inactivity expiry, but they DO expire if the user clears site data or revokes notification permission in system settings. The health check will catch both Android and iOS failure modes — same job, no extra work."
+						},
+						{ who: 'me', name: 'Nick · 13:41', text: 'Perfect. Ship it.' },
+						{
+							who: 'them',
+							name: 'Pennyworth · 13:42',
+							text: 'On it. Issue <code>#274</code> bumped to in-progress, branch <code>fix/push-subscription-health</code> created. ETA EOD tomorrow for a draft PR.'
+						}
+					]
+				},
+				'coach-mike': {
+					title: 'Coach Mike feedback synthesis',
+					glyph: '★',
+					meta: 'Persistent · 28 messages',
+					messages: [
+						{
+							who: 'me',
+							name: 'Nick · yesterday 16:04',
+							text: 'Just got off a call with Mike. He has a bunch of feedback from the last two weeks of using StrideMind. Want to capture it here so we can synthesize before Friday.'
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 16:04',
+							text: "Ready. Drop the notes — I'll group by theme (UX, comms, scheduling, parent experience) and flag anything that touches Phase 1 DoD."
+						},
+						{
+							who: 'me',
+							name: 'Nick · 16:05',
+							text: "1) Parents keep asking him 'did you get my RSVP' — there's no confirmation back to the parent. 2) The announcement compose screen feels heavy when he just wants to send a quick text. 3) Two parents on iOS missed pushes (we already have a thread for that). 4) He wants to be able to attach a photo to an announcement. 5) The 'who has read this' indicator is buried."
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 16:06',
+							text: 'Grouped:<br/><br/><strong>Comms (highest impact)</strong><br/>• Quick-send mode for announcements (item 2)<br/>• Photo attachments (item 4)<br/>• Surface read receipts more prominently (item 5)<br/><br/><strong>RSVP / parent loop</strong><br/>• Parent-facing RSVP confirmation (item 1)<br/><br/><strong>Push reliability</strong><br/>• iOS expiry — already tracked in "Push notification research" thread (item 3)<br/><br/>Items 1, 2, and 5 all touch Phase 1 DoD. Items 4 is Phase 2 nice-to-have. Want me to file issues now or wait for the Friday session?'
+						},
+						{
+							who: 'me',
+							name: 'Nick · 16:08',
+							text: 'File issues for 1, 2, 5 now. Tag them coach-feedback and phase-1. Hold 4 in a backlog note.'
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 16:08',
+							text: 'Filed:<br/>• <code>#275</code> — Parent-facing RSVP confirmation<br/>• <code>#276</code> — Quick-send announcement mode<br/>• <code>#277</code> — Surface read receipts in announcement detail view<br/><br/>Item 4 added to <code>backlog/photo-attachments.md</code>. All three issues linked to the StrideMind project board, Phase 1 column.'
+						},
+						{
+							who: 'me',
+							name: 'Nick · 16:10',
+							text: 'Good. Anything else jump out from the conversation that I might have missed?'
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 16:11',
+							text: "One pattern: every issue Mike raised was about closing a feedback loop with a parent (RSVP confirmation, read receipts, push delivery). That's the same root concern — parents need to feel heard, coaches need to know parents got the message. The Council was right: delivery confirmation IS the foundation. Mike's feedback validates that bet."
+						},
+						{ who: 'me', name: 'Nick · 16:13', text: "That's the framing for Friday. Thanks." }
+					]
+				},
+				'rsvp-design': {
+					title: 'RSVP flow design notes',
+					glyph: '★',
+					meta: 'Persistent · 9 messages',
+					messages: [
+						{
+							who: 'me',
+							name: 'Nick · 2d ago 09:22',
+							text: "Sketching the RSVP flow. Coach posts an event, parents RSVP yes/no/maybe, coach sees a roster. What's the simplest path from zero to working?"
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 09:23',
+							text: 'Three screens: <strong>1)</strong> Coach event compose (existing) gets an "RSVP required" toggle. <strong>2)</strong> Parent push notification deep-links to a one-tap RSVP screen — no login wall. <strong>3)</strong> Coach detail view shows roster grouped by Yes / No / Maybe / No response. That\'s the MVP. Everything else (reminders, attendance, late changes) can wait.'
+						},
+						{
+							who: 'me',
+							name: 'Nick · 09:25',
+							text: "The no-login wall is the key insight. Most parents won't make accounts. How do we authenticate them on the deep link?"
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 09:26',
+							text: 'Signed magic link. Each push notification carries a per-parent token tied to that specific event + parent ID. Token expires after the event. No password, no account required. We already have the infra from the team-join flow.'
+						},
+						{
+							who: 'me',
+							name: 'Nick · 09:28',
+							text: "Beautiful. What about the 'Maybe' state? Mike said 'maybe' is basically useless for planning."
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 09:29',
+							text: 'Two options: drop Maybe entirely (Yes/No only), or keep Maybe but visually deprioritize it in the coach roster. I\'d drop it. "Maybe" creates ambiguity and forces the coach to chase. Yes/No is honest.'
+						},
+						{ who: 'me', name: 'Nick · 09:30', text: 'Drop it. Yes/No only.' },
+						{
+							who: 'them',
+							name: 'Pennyworth · 09:30',
+							text: 'Decision recorded. Drafting the RSVP screens now — will save to Artifacts as <code>rsvp-flow-mockup.md</code> by EOD.'
+						},
+						{ who: 'me', name: 'Nick · 09:31', text: '👍' }
+					]
+				},
+				'quick-q': {
+					title: 'Quick q 13:42',
+					glyph: '·',
+					meta: 'Throwaway · 3 messages',
+					messages: [
+						{
+							who: 'me',
+							name: 'Nick · 13:42',
+							text: "What's the lucide icon for a megaphone? I want to use it for the announcements tab."
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 13:42',
+							text: 'It\'s literally <code>megaphone</code>. <code>&lt;i data-lucide="megaphone"&gt;&lt;/i&gt;</code>. There\'s also <code>bullhorn</code> as an alias in older versions.'
+						},
+						{ who: 'me', name: 'Nick · 13:42', text: 'Perfect, thanks.' }
+					]
+				},
+				'debug-help': {
+					title: 'Debug help — Vercel build',
+					glyph: '·',
+					meta: 'Throwaway · 6 messages',
+					messages: [
+						{
+							who: 'me',
+							name: 'Nick · this morning',
+							text: "Vercel build is failing on the team-communication branch. <code>Error: Cannot find module 'web-push'</code>. But I already <code>pnpm add web-push</code>'d it."
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · this morning',
+							text: "Check whether <code>pnpm-lock.yaml</code> got committed. Vercel reads the lockfile, not <code>package.json</code>. If the lock wasn't updated, the package never installs in CI."
+						},
+						{
+							who: 'me',
+							name: 'Nick · this morning',
+							text: "<code>git status</code> shows lockfile modified but unstaged. That'd do it."
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · this morning',
+							text: 'Yep. Stage it, commit, redeploy. Should pass.'
+						},
+						{ who: 'me', name: 'Nick · this morning', text: 'Build green. Thanks.' },
+						{
+							who: 'them',
+							name: 'Pennyworth · this morning',
+							text: '👍 want me to delete this thread or keep it for reference?'
+						}
+					]
+				},
+				'env-vars': {
+					title: 'Quick q 09:18',
+					glyph: '·',
+					meta: 'Throwaway · 2 messages',
+					messages: [
+						{
+							who: 'me',
+							name: 'Nick · 09:18',
+							text: 'What env vars does StrideMind need set on Vercel preview deployments?'
+						},
+						{
+							who: 'them',
+							name: 'Pennyworth · 09:18',
+							text: 'From <code>.env.example</code>: <code>DATABASE_URL</code>, <code>NEXTAUTH_SECRET</code>, <code>NEXTAUTH_URL</code>, <code>VAPID_PUBLIC_KEY</code>, <code>VAPID_PRIVATE_KEY</code>, <code>VAPID_SUBJECT</code>. The two VAPID keys are the only ones that differ between preview and prod.'
+						}
+					]
+				}
+			};
+
+			function renderThread(threadId) {
+				const t = THREADS[threadId];
+				if (!t) return;
+				document.getElementById('active-thread-title').textContent = t.title;
+				document.getElementById('active-thread-glyph').textContent = t.glyph;
+				document.getElementById('active-thread-meta').textContent = t.meta;
+				const container = document.getElementById('thread-messages');
+				container.innerHTML = t.messages
+					.map(
+						(m) =>
+							'<div class="msg ' +
+							m.who +
+							'">' +
+							'<div class="who">' +
+							m.name +
+							'</div>' +
+							'<div class="bubble">' +
+							m.text +
+							'</div>' +
+							'</div>'
+					)
+					.join('');
+				container.scrollTop = container.scrollHeight;
+				refreshIcons();
+			}
+
+			document.querySelectorAll('.thread-row').forEach((row) => {
+				row.addEventListener('click', () => {
+					document.querySelectorAll('.thread-row').forEach((r) => r.classList.remove('active'));
+					row.classList.add('active');
+					renderThread(row.dataset.thread);
+				});
+			});
+
+			// ============== THEME TOGGLE ==============
+			const themeToggle = document.getElementById('theme-toggle');
+			function updateThemeIcon() {
+				const icon = document.getElementById('theme-icon');
+				if (!icon) return;
+				const isDark = document.documentElement.classList.contains('dark');
+				icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+				refreshIcons();
+			}
+			themeToggle.addEventListener('click', () => {
+				const isDark = document.documentElement.classList.contains('dark');
+				document.documentElement.classList.toggle('dark', !isDark);
+				document.documentElement.classList.toggle('light', isDark);
+				try {
+					localStorage.setItem('oracle:theme', isDark ? 'light' : 'dark');
+				} catch (e) {}
+				updateThemeIcon();
+			});
+
+			// ============== INIT ==============
+			document.addEventListener('DOMContentLoaded', () => {
+				refreshIcons();
+				updateThemeIcon();
+				// make sure thread messages are scrolled to bottom on first paint
+				const msgs = document.getElementById('thread-messages');
+				if (msgs) msgs.scrollTop = msgs.scrollHeight;
+			});
+			refreshIcons();
+			updateThemeIcon();
+		</script>
+	</body>
+</html>

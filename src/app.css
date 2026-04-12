@@ -1,0 +1,423 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/geist-mono';
+@import '@fontsource-variable/jetbrains-mono';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+	/* Light mode — Darkmatter (tweakcn) */
+	--background: oklch(1 0 0);
+	--foreground: oklch(0.2101 0.0318 264.6645);
+	--card: oklch(1 0 0);
+	--card-foreground: oklch(0.2101 0.0318 264.6645);
+	--popover: oklch(1 0 0);
+	--popover-foreground: oklch(0.2101 0.0318 264.6645);
+	--primary: oklch(0.6716 0.1368 48.513); /* copper #D87943 */
+	--primary-foreground: oklch(1 0 0);
+	--secondary: oklch(0.536 0.0398 196.028); /* teal #527575 */
+	--secondary-foreground: oklch(1 0 0);
+	--muted: oklch(0.967 0.0029 264.5419);
+	--muted-foreground: oklch(0.551 0.0234 264.3637);
+	--accent: oklch(0.9491 0 0);
+	--accent-foreground: oklch(0.2101 0.0318 264.6645);
+	--destructive: oklch(0.6368 0.2078 25.3313);
+	--destructive-foreground: oklch(0.9851 0 0);
+	--border: oklch(0.9276 0.0058 264.5313);
+	--input: oklch(0.9276 0.0058 264.5313);
+	--ring: oklch(0.6716 0.1368 48.513); /* copper focus ring */
+	--radius: 0.75rem;
+}
+
+.dark {
+	/* Dark mode — Darkmatter (tweakcn) */
+	--background: oklch(0.1797 0.0043 308.1928); /* slate-tinted near-black */
+	--foreground: oklch(0.8109 0 0); /* warm off-white */
+	--card: oklch(0.2101 0.0318 264.6645);
+	--card-foreground: oklch(0.8109 0 0);
+	--popover: oklch(0.2101 0.0318 264.6645);
+	--popover-foreground: oklch(0.8109 0 0);
+	--primary: oklch(0.7214 0.1337 49.9802); /* copper (lighter for dark mode) */
+	--primary-foreground: oklch(0.1797 0.0043 308.1928);
+	--secondary: oklch(0.594 0.0443 196.0233); /* teal (lighter for dark mode) */
+	--secondary-foreground: oklch(0.9851 0 0);
+	--muted: oklch(0.252 0 0);
+	--muted-foreground: oklch(0.683 0 0);
+	--accent: oklch(0.252 0 0);
+	--accent-foreground: oklch(0.8109 0 0);
+	--destructive: oklch(0.6368 0.2078 25.3313);
+	--destructive-foreground: oklch(0.9851 0 0);
+	--border: oklch(0.252 0 0);
+	--input: oklch(0.252 0 0);
+	--ring: oklch(0.7214 0.1337 49.9802); /* copper focus ring */
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+
+	--font-mono:
+		'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+		'Courier New', monospace;
+	--font-code:
+		'JetBrains Mono Variable', 'Geist Mono Variable', ui-monospace, SFMono-Regular, monospace;
+
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+}
+
+/* iOS Safari: safe-area support for notch/Dynamic Island devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+	:root {
+		--safe-area-bottom: env(safe-area-inset-bottom, 0px);
+	}
+}
+
+/* Base styles */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	font-family: var(--font-mono);
+	font-size: 14px;
+	letter-spacing: 0em;
+	background-color: var(--background);
+	color: var(--foreground);
+	transition:
+		background-color 150ms ease,
+		color 150ms ease;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+code,
+pre,
+kbd,
+samp {
+	font-family: var(--font-code);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--muted-foreground);
+}
+
+/* Focus ring */
+:focus-visible {
+	outline: 2px solid var(--ring);
+	outline-offset: 2px;
+}
+
+/* Prose styles for markdown content */
+.prose {
+	max-width: 68ch;
+	color: var(--foreground);
+	line-height: 1.7;
+}
+
+.prose h1 {
+	font-size: 28px;
+	font-weight: 700;
+	margin: 1.5rem 0 0.75rem;
+}
+.prose h2 {
+	font-size: 22px;
+	font-weight: 600;
+	margin: 1.25rem 0 0.5rem;
+}
+.prose h3 {
+	font-size: 18px;
+	font-weight: 600;
+	margin: 1rem 0 0.5rem;
+}
+.prose h4 {
+	font-size: 16px;
+	font-weight: 600;
+	margin: 0.75rem 0 0.25rem;
+}
+.prose h5,
+.prose h6 {
+	font-size: 14px;
+	font-weight: 600;
+	margin: 0.75rem 0 0.25rem;
+}
+
+.prose p {
+	margin: 0.75rem 0;
+}
+
+.prose ul {
+	margin: 0.5rem 0;
+	padding-left: 1.5rem;
+	list-style: none;
+}
+.prose ul li::before {
+	content: '•';
+	margin-left: -1rem;
+	margin-right: 0.5rem;
+	color: var(--muted-foreground);
+}
+
+.prose ol {
+	margin: 0.5rem 0;
+	padding-left: 1.5rem;
+}
+.prose ol li {
+	list-style: decimal;
+}
+
+/* DoD checkboxes — read-only */
+.prose .task-list-item {
+	list-style: none;
+	margin-left: -1rem;
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5rem;
+}
+.prose .task-list-item input[type='checkbox'] {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 12px;
+	height: 12px;
+	min-width: 12px;
+	border: 2px solid var(--border);
+	border-radius: 2px;
+	margin-top: 3px;
+	cursor: default;
+	pointer-events: none;
+}
+.prose .task-list-item input[type='checkbox']:checked {
+	background-color: var(--primary);
+	border-color: var(--primary);
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 5l2.5 2.5L8 3' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-size: 10px;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.prose code {
+	font-family: var(--font-code);
+	background-color: var(--muted);
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	padding: 1px 4px;
+	font-size: 0.9em;
+}
+
+.prose pre {
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	overflow-x: auto;
+	margin: 1rem 0;
+}
+.prose pre code {
+	background: none;
+	border: none;
+	padding: 0;
+	font-size: 13px;
+}
+
+.prose table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 1rem 0;
+	font-size: 13px;
+}
+.prose th,
+.prose td {
+	border: 1px solid var(--border);
+	padding: 6px 10px;
+	text-align: left;
+}
+.prose th {
+	background-color: var(--muted);
+	font-weight: 600;
+}
+
+.prose blockquote {
+	border-left: 2px solid var(--border);
+	padding-left: 1rem;
+	margin: 0.75rem 0;
+	font-style: italic;
+	color: color-mix(in oklch, var(--muted-foreground) 80%, transparent);
+}
+
+.prose a {
+	color: var(--foreground);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.prose a:hover {
+	color: var(--primary);
+}
+.prose a[href^='http']::after {
+	content: ' ↗';
+	font-style: normal;
+	font-size: 0.8em;
+	opacity: 0.7;
+}
+
+.prose hr {
+	border: none;
+	border-top: 1px solid var(--border);
+	margin: 1.5rem 0;
+}
+
+.prose strong {
+	font-weight: 700;
+}
+.prose em {
+	font-style: italic;
+}
+
+/* ─── Chat markdown rendering ────────────────────────────────────────────── */
+
+.chat-markdown {
+	font-size: 0.875rem;
+	line-height: 1.625;
+	overflow-wrap: break-word;
+}
+
+.chat-markdown p {
+	margin-bottom: 0.5em;
+}
+
+.chat-markdown p:last-child {
+	margin-bottom: 0;
+}
+
+.chat-markdown ul,
+.chat-markdown ol {
+	padding-left: 1.25em;
+	margin-bottom: 0.5em;
+}
+
+.chat-markdown li {
+	margin-bottom: 0.125em;
+}
+
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3,
+.chat-markdown h4,
+.chat-markdown h5,
+.chat-markdown h6 {
+	font-weight: 600;
+	margin-top: 0.75em;
+	margin-bottom: 0.25em;
+}
+
+.chat-markdown h1 {
+	font-size: 1.125rem;
+}
+.chat-markdown h2 {
+	font-size: 1rem;
+}
+.chat-markdown h3 {
+	font-size: 0.9375rem;
+}
+
+.chat-markdown a {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.chat-markdown blockquote {
+	border-left: 2px solid var(--border);
+	padding-left: 0.75em;
+	margin: 0.5em 0;
+	color: var(--muted-foreground);
+}
+
+.chat-markdown strong {
+	font-weight: 700;
+}
+
+.chat-markdown em {
+	font-style: italic;
+}
+
+.chat-markdown code:not(pre code) {
+	background-color: var(--muted);
+	padding: 0.125em 0.375em;
+	border-radius: 0.25rem;
+	font-size: 0.8125rem;
+	font-family: var(--font-code);
+}
+
+.chat-code-block {
+	background-color: var(--muted);
+	border: 1px solid var(--border);
+	border-radius: 0.5rem;
+	padding: 0.75rem 1rem;
+	overflow-x: auto;
+	margin: 0.5em 0;
+	font-size: 0.8125rem;
+	line-height: 1.5;
+	font-family: var(--font-code);
+}
+
+.chat-code-block code {
+	background: none;
+	padding: 0;
+	border: none;
+	font-size: inherit;
+}
+
+/* Typing cursor for streaming messages */
+.typing-cursor {
+	display: inline;
+	animation: blink 1s step-end infinite;
+	color: var(--primary);
+	font-weight: bold;
+}
+
+@keyframes blink {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.typing-cursor {
+		animation: none;
+		opacity: 0.7;
+	}
+}

@@ -1,0 +1,63 @@
+services:
+  oracle:
+    image: ghcr.io/nkburdick/oracle-app:latest
+    container_name: oracle
+    restart: unless-stopped
+    # Bind to localhost only — public access goes through Traefik.
+    ports:
+      - '127.0.0.1:3000:3000'
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      HOST: '0.0.0.0'
+      ORACLE_DATA_PATH: /opt/oracle/data
+      TZ: America/Los_Angeles
+    volumes:
+      - oracle_data:/opt/oracle/data
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.oracle.rule=Host(`oracle.aptoworks.cloud`)'
+      - 'traefik.http.routers.oracle.entrypoints=web,websecure'
+      - 'traefik.http.routers.oracle.tls=true'
+      - 'traefik.http.routers.oracle.tls.certresolver=mytlschallenge'
+      - 'traefik.http.services.oracle.loadbalancer.server.port=3000'
+      # Force Traefik to use the Traefik network for the service endpoint.
+      # The container is on multiple networks (oracle-stack_default + root_default);
+      # without this, Traefik can pick the wrong one and silently fail to route.
+      - 'traefik.docker.network=root_default'
+      # HTTP Basic Auth — users loaded from .env at deploy time.
+      # Required per Warden review (ORACLE#22). App is single-user and contains
+      # private PARA data, so public access is not acceptable.
+      - 'traefik.http.routers.oracle.middlewares=oracle-auth'
+      - 'traefik.http.middlewares.oracle-auth.basicauth.users=${ORACLE_BASIC_AUTH_USERS}'
+      - 'traefik.http.middlewares.oracle-auth.basicauth.realm=Oracle'
+      - 'traefik.http.middlewares.oracle-auth.basicauth.removeheader=true'
+    healthcheck:
+      # Use 127.0.0.1 not localhost — Alpine resolves localhost to ::1 (IPv6),
+      # but the SvelteKit Node adapter only binds IPv4 (0.0.0.0). busybox wget
+      # does not fall back from v6 to v4, so localhost causes connection
+      # refused, the container stays "starting", and Traefik filters it out
+      # silently as unhealthy.
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3000/api/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - default
+      - traefik
+
+volumes:
+  oracle_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/oracle/data
+
+networks:
+  # Traefik's network on KVM 2. Pre-existing, created by the root Traefik stack.
+  # Must be `external: true` so compose doesn't try to recreate it.
+  traefik:
+    name: root_default
+    external: true
