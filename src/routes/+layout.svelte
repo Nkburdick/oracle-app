@@ -66,15 +66,16 @@
 	<!-- Desktop sidebar -->
 	<Sidebar projects={data.projects} areas={data.areas} />
 
-	<!-- Main content area -->
+	<!-- Main content area — safe-area-inset-top for standalone PWA on notch devices -->
 	<main
-		class="flex-1 overflow-y-auto pb-16 lg:pb-0 has-[data-chat-thread]:overflow-hidden has-[data-chat-thread]:pb-0"
+		class="flex-1 overflow-y-auto pb-16 lg:pb-0 has-[data-chat-thread]:overflow-hidden has-[data-chat-thread]:pb-0 has-[data-chat-thread]:pt-0"
+		style="padding-top: env(safe-area-inset-top, 0px);"
 	>
 		{@render children()}
 	</main>
 
-	<!-- Notification bell — fixed top-right -->
-	<div class="fixed top-2 right-3 z-40">
+	<!-- Notification bell — fixed top-right, offset for safe-area -->
+	<div class="fixed right-3 z-40" style="top: max(0.5rem, env(safe-area-inset-top, 0.5rem));">
 		<NotificationBell bind:this={notificationBellRef} />
 	</div>
 
