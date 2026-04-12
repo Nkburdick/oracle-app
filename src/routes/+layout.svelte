@@ -68,8 +68,7 @@
 
 	<!-- Main content area — safe-area-inset-top for standalone PWA on notch devices -->
 	<main
-		class="flex-1 overflow-y-auto pb-16 lg:pb-0 has-[data-chat-thread]:overflow-hidden has-[data-chat-thread]:pb-0 has-[data-chat-thread]:pt-0"
-		style="padding-top: env(safe-area-inset-top, 0px);"
+		class="flex-1 overflow-y-auto pt-safe-area pb-16 lg:pb-0 has-[data-chat-thread]:overflow-hidden has-[data-chat-thread]:pb-0 has-[data-chat-thread]:!pt-0"
 	>
 		{@render children()}
 	</main>
