@@ -14,6 +14,8 @@ services:
       ORACLE_AUTH_USERNAME: ${ORACLE_AUTH_USERNAME}
       ORACLE_AUTH_PASSWORD: ${ORACLE_AUTH_PASSWORD}
       ORACLE_AUTH_SECRET: ${ORACLE_AUTH_SECRET}
+      PENNYWORTH_BASE_URL: http://pennyworth:3001
+      PENNYWORTH_API_TOKEN: ${PENNYWORTH_API_TOKEN}
       TZ: America/Los_Angeles
     volumes:
       - oracle_data:/opt/oracle/data
