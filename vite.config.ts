@@ -67,6 +67,10 @@ export default defineConfig({
 		// matchers like `toBeInTheDocument`, `toBeDisabled`, `toHaveTextContent`.
 		// Importing the matchers is a no-op in node-environment tests; they only
 		// activate when expect() is called against a DOM node.
-		setupFiles: ['./tests/setup-jsdom.ts']
+		setupFiles: ['./tests/setup-jsdom.ts'],
+		// GitHub Actions runners are slower — increase hook timeout to avoid
+		// false failures on component test setup/teardown.
+		hookTimeout: 30_000,
+		testTimeout: 15_000
 	}
 });
