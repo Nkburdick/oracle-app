@@ -92,13 +92,22 @@
 	}
 }
 
-/* Safe-area utility — used by root layout, disabled when chat thread is active */
+/* Safe-area utility — used by root layout */
 .pt-safe-area {
 	padding-top: env(safe-area-inset-top, 0px);
 }
-.pt-safe-area:has([data-chat-thread]) {
-	padding-top: 0;
+
+/* Chat thread full-screen takeover — hide shell chrome, zero all padding.
+   The chat page (h-[100dvh]) manages its own layout including safe areas. */
+.app-shell:has([data-chat-thread]) .app-main {
+	padding: 0 !important;
 	overflow: hidden;
+}
+.app-shell:has([data-chat-thread]) nav[aria-label="Mobile navigation"] {
+	display: none;
+}
+.app-shell:has([data-chat-thread]) .app-bell {
+	display: none;
 }
 
 /* Base styles */
