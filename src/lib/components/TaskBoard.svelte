@@ -3,13 +3,17 @@
 	import { dndzone } from 'svelte-dnd-action';
 	import type { Task } from '$lib/types/oracle-task.js';
 	import TaskRow from './TaskRow.svelte';
+	import TaskDetail from './TaskDetail.svelte';
+	import NewTaskSheet from './NewTaskSheet.svelte';
 
 	interface Props {
 		tasks: Task[];
 		slug: string;
+		/** platform_ids.github_repo — forwarded to TaskDetail for the promote flow */
+		githubRepo?: string;
 	}
 
-	const { tasks, slug }: Props = $props();
+	const { tasks, slug, githubRepo }: Props = $props();
 
 	// ── Local mutable task list ────────────────────────────────────────────────
 	// Maintained separately so DnD reorders and optimistic patches don't
@@ -94,6 +98,31 @@
 		localTasks = [...others, ...items];
 	}
 
+	// ── Sheet state ───────────────────────────────────────────────────────────
+
+	let selectedTask: Task | null = $state(null);
+	let showNewTask = $state(false);
+
+	function openDetail(task: Task) {
+		selectedTask = task;
+	}
+
+	function closeDetail() {
+		selectedTask = null;
+	}
+
+	function handleDetailPatch(taskId: string, patch: Partial<Task>) {
+		handleTaskPatch(taskId, patch);
+		// Keep selectedTask in sync so the sheet reflects the updated state
+		if (selectedTask?.id === taskId) {
+			selectedTask = { ...selectedTask, ...patch };
+		}
+	}
+
+	function handleCreated(task: Task) {
+		localTasks = [...localTasks, task];
+	}
+
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	async function handleFinalize(sectionName: string | null, e: any) {
 		const reorderedItems = e.detail.items as Task[];
@@ -121,14 +150,15 @@
 		<!-- Empty state -->
 		<div class="flex min-h-64 flex-col items-center justify-center gap-4 text-center">
 			<p class="text-sm text-muted-foreground">No tasks yet. Create the first one.</p>
-			<a
-				href="/api/projects/{slug}/tasks"
+			<button
+				type="button"
+				onclick={() => { showNewTask = true; }}
 				class="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
 				aria-label="Create first task"
 			>
 				<Plus size={16} />
 				New task
-			</a>
+			</button>
 		</div>
 	{:else}
 		<div class="flex flex-col gap-6">
@@ -169,7 +199,7 @@
 						>
 							{#each section.tasks as task (task.id)}
 								<li>
-									<TaskRow {task} {slug} onpatch={handleTaskPatch} />
+									<TaskRow {task} {slug} onpatch={handleTaskPatch} onopen={openDetail} />
 								</li>
 							{/each}
 						</ul>
@@ -178,13 +208,35 @@
 			{/each}
 		</div>
 
-		<!-- FAB — create new task -->
-		<a
-			href="/api/projects/{slug}/tasks"
-			class="fixed bottom-20 right-5 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-opacity hover:opacity-90 lg:bottom-6 lg:right-6"
-			aria-label="Create new task"
-		>
-			<Plus size={20} />
-		</a>
 	{/if}
 </div>
+
+<!-- FAB — always visible, opens NewTaskSheet -->
+<button
+	type="button"
+	onclick={() => { showNewTask = true; }}
+	class="fixed bottom-20 right-5 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-opacity hover:opacity-90 lg:bottom-6 lg:right-6"
+	aria-label="Create new task"
+>
+	<Plus size={20} />
+</button>
+
+<!-- TaskDetail sheet (opens when a row is tapped) -->
+{#if selectedTask}
+	<TaskDetail
+		task={selectedTask}
+		{slug}
+		{githubRepo}
+		onclose={closeDetail}
+		onpatch={handleDetailPatch}
+	/>
+{/if}
+
+<!-- NewTaskSheet (opens via FAB) -->
+{#if showNewTask}
+	<NewTaskSheet
+		{slug}
+		onclose={() => { showNewTask = false; }}
+		oncreate={handleCreated}
+	/>
+{/if}

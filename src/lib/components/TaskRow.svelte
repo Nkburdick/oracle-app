@@ -7,9 +7,11 @@
 		slug: string;
 		/** Optimistic-update callback so the parent can track mutations */
 		onpatch?: (id: string, patch: Partial<Task>) => void;
+		/** Called when the user taps the task content to open the detail sheet */
+		onopen?: (task: Task) => void;
 	}
 
-	const { task, slug, onpatch }: Props = $props();
+	const { task, slug, onpatch, onopen }: Props = $props();
 
 	// ── Status helpers ────────────────────────────────────────────────────────
 
@@ -258,8 +260,12 @@
 			{STATUS_LABELS[optimisticStatus]}
 		</button>
 
-		<!-- Content, description, phase -->
-		<div class="min-w-0 flex-1">
+		<!-- Content, description, phase — tap to open detail sheet -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="min-w-0 flex-1 {onopen ? 'cursor-pointer' : ''}"
+			onclick={(e) => { e.stopPropagation(); onopen?.(task); }}
+		>
 			<p
 				class="text-sm leading-snug {optimisticStatus === 'done'
 					? 'text-muted-foreground line-through'

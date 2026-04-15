@@ -5,4 +5,8 @@
 	const { data }: { data: PageData } = $props();
 </script>
 
-<TaskBoard tasks={data.tasks} slug={data.project.frontmatter.slug} />
+<TaskBoard
+	tasks={data.tasks}
+	slug={data.project.frontmatter.slug}
+	githubRepo={data.project.frontmatter.platform_ids?.github_repo}
+/>
