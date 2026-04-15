@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { ChevronDown, Plus } from 'lucide-svelte';
+	import { dndzone } from 'svelte-dnd-action';
 	import type { Task } from '$lib/types/oracle-task.js';
+	import TaskRow from './TaskRow.svelte';
 
 	interface Props {
 		tasks: Task[];
@@ -9,39 +11,57 @@
 
 	const { tasks, slug }: Props = $props();
 
-	// Group tasks by section. Null/undefined section goes into a sentinel group
-	// rendered last as "No section".
+	// ── Local mutable task list ────────────────────────────────────────────────
+	// Maintained separately so DnD reorders and optimistic patches don't
+	// get overwritten until the next server reload.
+
+	// localTasks is a mutable copy; $effect re-syncs it whenever the `tasks` prop changes
+	// (e.g. after SSE-triggered server reload). The initializer captures the first value, which is fine.
+	// svelte-ignore state_referenced_locally
+	let localTasks: Task[] = $state([...tasks].sort((a, b) => a.sort_order - b.sort_order));
+
+	$effect(() => {
+		// Re-sync from server (SSE-triggered invalidate)
+		localTasks = [...tasks].sort((a, b) => a.sort_order - b.sort_order);
+	});
+
+	// ── Section grouping ───────────────────────────────────────────────────────
+
 	type Section = { name: string | null; tasks: Task[] };
 
-	const sections = $derived.by((): Section[] => {
-		const map = new Map<string, Task[]>();
-		const unsectioned: Task[] = [];
+	function buildSections(taskList: Task[]): Section[] {
+		const sectionOrder: (string | null)[] = [];
+		const map = new Map<string | null, Task[]>();
 
-		for (const task of tasks) {
-			if (task.section) {
-				const existing = map.get(task.section);
-				if (existing) {
-					existing.push(task);
-				} else {
-					map.set(task.section, [task]);
-				}
+		for (const task of taskList) {
+			const key = task.section ?? null;
+			if (!map.has(key)) {
+				sectionOrder.push(key);
+				map.set(key, []);
+			}
+			map.get(key)!.push(task);
+		}
+
+		// Named sections first, then the null/unsectioned group at the end
+		const named: Section[] = [];
+		let unsectioned: Section | null = null;
+
+		for (const name of sectionOrder) {
+			const section: Section = { name, tasks: map.get(name)! };
+			if (name === null) {
+				unsectioned = section;
 			} else {
-				unsectioned.push(task);
+				named.push(section);
 			}
 		}
 
-		const result: Section[] = [];
-		for (const [name, sectionTasks] of map) {
-			result.push({ name, tasks: sectionTasks });
-		}
-		// Unsectioned tasks always appear last
-		if (unsectioned.length > 0) {
-			result.push({ name: null, tasks: unsectioned });
-		}
-		return result;
-	});
+		return unsectioned ? [...named, unsectioned] : named;
+	}
 
-	// Track collapsed state per section name (null key = unsectioned group)
+	const sections = $derived(buildSections(localTasks));
+
+	// ── Collapsible sections ───────────────────────────────────────────────────
+
 	const collapsed = $state(new Map<string | null, boolean>());
 
 	function toggleSection(name: string | null) {
@@ -52,33 +72,58 @@
 		return collapsed.get(name) ?? false;
 	}
 
-	const STATUS_LABELS: Record<string, string> = {
-		backlog: 'Backlog',
-		ready: 'Ready',
-		in_progress: 'In progress',
-		review: 'Review',
-		done: 'Done'
-	};
+	// ── Optimistic patch from TaskRow ──────────────────────────────────────────
 
-	const STATUS_COLORS: Record<string, string> = {
-		backlog: 'bg-muted text-muted-foreground',
-		ready: 'bg-secondary/20 text-secondary',
-		in_progress: 'bg-primary/15 text-primary',
-		review: 'bg-accent text-accent-foreground border border-border',
-		done: 'bg-muted text-muted-foreground line-through'
-	};
+	function handleTaskPatch(taskId: string, patch: Partial<Task>) {
+		localTasks = localTasks.map((t) => (t.id === taskId ? { ...t, ...patch } : t));
+	}
+
+	// ── Drag-and-drop (svelte-dnd-action, within-section only) ────────────────
+
+	const FLIP_MS = 200;
+
+	// Each section uses a unique `type` so items cannot be dragged cross-section.
+	function sectionType(name: string | null): string {
+		return `task-section:${name ?? '__unsectioned__'}`;
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	function handleConsider(sectionName: string | null, e: any) {
+		const items = e.detail.items as Task[];
+		const others = localTasks.filter((t) => (t.section ?? null) !== sectionName);
+		localTasks = [...others, ...items];
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	async function handleFinalize(sectionName: string | null, e: any) {
+		const reorderedItems = e.detail.items as Task[];
+		const others = localTasks.filter((t) => (t.section ?? null) !== sectionName);
+		localTasks = [...others, ...reorderedItems];
+
+		// Patch sort_order for tasks whose position changed
+		await Promise.all(
+			reorderedItems.map((task, idx) => {
+				if (task.sort_order === idx) return Promise.resolve();
+				return fetch(`/api/projects/${slug}/tasks/${task.id}`, {
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ sort_order: idx })
+				}).catch(() => {
+					// Non-fatal: server reload via SSE will eventually correct order
+				});
+			})
+		);
+	}
 </script>
 
 <div class="p-6" data-testid="task-board">
-	{#if tasks.length === 0}
+	{#if localTasks.length === 0}
 		<!-- Empty state -->
-		<div class="flex flex-col items-center justify-center min-h-64 gap-4 text-center">
-			<p class="text-sm text-muted-foreground">
-				No tasks yet. Create the first one.
-			</p>
+		<div class="flex min-h-64 flex-col items-center justify-center gap-4 text-center">
+			<p class="text-sm text-muted-foreground">No tasks yet. Create the first one.</p>
 			<a
 				href="/api/projects/{slug}/tasks"
-				class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+				class="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
 				aria-label="Create first task"
 			>
 				<Plus size={16} />
@@ -92,49 +137,39 @@
 					<!-- Section header -->
 					<button
 						type="button"
-						class="flex items-center gap-2 w-full text-left mb-2 group"
+						class="group mb-2 flex w-full items-center gap-2 text-left"
 						onclick={() => toggleSection(section.name)}
 						aria-expanded={!isCollapsed(section.name)}
 					>
 						<ChevronDown
 							size={14}
-							class="text-muted-foreground transition-transform flex-shrink-0
+							class="flex-shrink-0 text-muted-foreground transition-transform
 								{isCollapsed(section.name) ? '-rotate-90' : ''}"
 						/>
-						<span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground group-hover:text-foreground transition-colors">
+						<span
+							class="text-xs font-semibold uppercase tracking-wide text-muted-foreground transition-colors group-hover:text-foreground"
+						>
 							{section.name ?? 'No section'}
 						</span>
 						<span class="text-xs text-muted-foreground">({section.tasks.length})</span>
 					</button>
 
-					<!-- Task rows -->
+					<!-- Task rows with per-section DnD (no cross-section dragging) -->
 					{#if !isCollapsed(section.name)}
-						<ul class="flex flex-col divide-y divide-border border border-border rounded-lg overflow-hidden">
+						<ul
+							class="flex flex-col divide-y divide-border overflow-hidden rounded-lg border border-border"
+							use:dndzone={{
+								items: section.tasks,
+								flipDurationMs: FLIP_MS,
+								type: sectionType(section.name),
+								dropTargetStyle: {}
+							}}
+							onconsider={(e) => handleConsider(section.name, e)}
+							onfinalize={(e) => handleFinalize(section.name, e)}
+						>
 							{#each section.tasks as task (task.id)}
-								<li class="flex items-start gap-3 px-4 py-3 bg-card hover:bg-accent/40 transition-colors">
-									<!-- Status badge -->
-									<span
-										class="mt-0.5 flex-shrink-0 px-1.5 py-0.5 rounded text-[11px] font-medium {STATUS_COLORS[task.status] ?? 'bg-muted text-muted-foreground'}"
-									>
-										{STATUS_LABELS[task.status] ?? task.status}
-									</span>
-
-									<!-- Content -->
-									<div class="flex-1 min-w-0">
-										<p class="text-sm leading-snug {task.status === 'done' ? 'line-through text-muted-foreground' : ''}">
-											{task.content}
-										</p>
-										{#if task.description}
-											<p class="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-												{task.description}
-											</p>
-										{/if}
-									</div>
-
-									<!-- Assignee -->
-									<span class="flex-shrink-0 text-xs text-muted-foreground mt-0.5">
-										{task.assignee}
-									</span>
+								<li>
+									<TaskRow {task} {slug} onpatch={handleTaskPatch} />
 								</li>
 							{/each}
 						</ul>
@@ -146,7 +181,7 @@
 		<!-- FAB — create new task -->
 		<a
 			href="/api/projects/{slug}/tasks"
-			class="fixed bottom-20 right-5 lg:bottom-6 lg:right-6 z-10 flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:opacity-90 transition-opacity"
+			class="fixed bottom-20 right-5 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-opacity hover:opacity-90 lg:bottom-6 lg:right-6"
 			aria-label="Create new task"
 		>
 			<Plus size={20} />
