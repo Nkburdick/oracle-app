@@ -1,28 +1,22 @@
 import type { PageServerLoad } from './$types.js';
-import { readProject } from '$lib/server/oracle-reader.js';
 import { getPennyworthBaseUrl, listThreads, getMessages } from '$lib/server/pennyworth-client.js';
 import type { ChatLoaderData } from '$lib/types/chat.js';
-import { error } from '@sveltejs/kit';
 
 /**
- * Load the project plus its chat threads (Phase 2.B Minimal Chat — read path).
+ * Load chat threads for the project (Phase 2.B Minimal Chat — read path).
  *
- * The chat fetch is wrapped in a try/catch so a Pennyworth outage degrades to
- * an inline error state inside the Chats tab WITHOUT breaking the rest of the
- * project page (PRD §6.7, AC-35). The loader always returns a `chat` key with
- * arrays — never undefined — so the component can be authored without null
- * checks.
+ * Project data is provided by the parent layout load (+layout.server.ts).
+ * Calling parent() here ensures this load re-runs whenever the layout
+ * re-runs (e.g. on oracle:project invalidation from SSE events).
+ *
+ * The chat fetch is wrapped in a try/catch so a Pennyworth outage degrades
+ * to an inline error state inside the Chats tab WITHOUT breaking the rest of
+ * the project page (PRD §6.7, AC-35).
  */
-export const load: PageServerLoad = async ({ params, depends }) => {
-	depends(`oracle:project:${params.slug}`);
-	const project = await readProject(params.slug);
-	if (!project) {
-		error(404, `Project "${params.slug}" not found`);
-	}
-
+export const load: PageServerLoad = async ({ params, parent }) => {
+	await parent();
 	const chat: ChatLoaderData = await loadChatForProject(params.slug);
-
-	return { project, chat };
+	return { chat };
 };
 
 /**
