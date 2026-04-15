@@ -32,6 +32,28 @@ import {
 	sortByOrder
 } from './markdown.js';
 import type { Project, Area, SidebarItem, DashboardCard } from '$lib/types/oracle.js';
+import type { Task, TasksFile } from '$lib/types/oracle-task.js';
+
+const VALID_STATUSES = new Set(['backlog', 'ready', 'in_progress', 'review', 'done']);
+const VALID_ASSIGNEES = new Set(['nick', 'alfred', 'pennyworth', 'forge']);
+
+function isValidTask(t: unknown): t is Task {
+	if (!t || typeof t !== 'object') return false;
+	const r = t as Record<string, unknown>;
+	return (
+		typeof r.id === 'string' &&
+		typeof r.content === 'string' &&
+		(r.description === null || typeof r.description === 'string') &&
+		typeof r.status === 'string' && VALID_STATUSES.has(r.status) &&
+		typeof r.assignee === 'string' && VALID_ASSIGNEES.has(r.assignee) &&
+		(r.phase === null || typeof r.phase === 'string') &&
+		(r.section === null || typeof r.section === 'string') &&
+		typeof r.sort_order === 'number' &&
+		typeof r.created_at === 'string' &&
+		typeof r.updated_at === 'string' &&
+		r.sync !== null && typeof r.sync === 'object'
+	);
+}
 
 /** Resolve the root of the ORACLE data directory */
 function getDataRoot(): string {
@@ -194,6 +216,43 @@ export async function readDashboardCards(): Promise<DashboardCard[]> {
 		}
 	}
 	return sortByOrder(cards);
+}
+
+/** Read tasks for a project from Projects/<slug>/tasks.json */
+export async function readProjectTasks(slug: string): Promise<Task[]> {
+	if (!isSafeSlug(slug)) return [];
+	const projectsDir = getProjectsDir();
+	const filePath = join(projectsDir, slug, 'tasks.json');
+	if (!isPathInside(filePath, projectsDir)) return [];
+	let raw: string;
+	try {
+		raw = await readFile(filePath, 'utf-8');
+	} catch {
+		return [];
+	}
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch {
+		console.warn(`[oracle-reader] tasks.json for "${slug}" is not valid JSON`);
+		return [];
+	}
+	if (!parsed || typeof parsed !== 'object' || !Array.isArray((parsed as TasksFile).tasks)) {
+		console.warn(`[oracle-reader] tasks.json for "${slug}" missing "tasks" array`);
+		return [];
+	}
+	const tasks: Task[] = [];
+	for (const item of (parsed as TasksFile).tasks) {
+		if (isValidTask(item)) {
+			tasks.push(item);
+		} else {
+			console.warn(
+				`[oracle-reader] skipping malformed task in "${slug}/tasks.json":`,
+				JSON.stringify(item)
+			);
+		}
+	}
+	return tasks.sort((a, b) => a.sort_order - b.sort_order);
 }
 
 /** Get the data root path for the file watcher */
