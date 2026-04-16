@@ -36,7 +36,7 @@ function tasksFile(tasks: Task[]): string {
 }
 
 function mockReadFile(content: string) {
-	vi.mocked(readFile).mockResolvedValueOnce(content as unknown as Buffer);
+	vi.mocked(readFile).mockResolvedValueOnce(Buffer.from(content));
 }
 
 function mockReadFileError(code = 'ENOENT') {
