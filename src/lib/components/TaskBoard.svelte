@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ChevronDown, Plus } from 'lucide-svelte';
-	import { dndzone } from 'svelte-dnd-action';
+	import { dragHandleZone, dragHandle } from 'svelte-dnd-action';
 	import type { Task } from '$lib/types/oracle-task.js';
 	import TaskRow from './TaskRow.svelte';
 	import TaskDetail from './TaskDetail.svelte';
@@ -34,46 +34,44 @@
 	type Section = { name: string | null; tasks: Task[] };
 
 	function buildSections(taskList: Task[]): Section[] {
-		const sectionOrder: (string | null)[] = [];
 		const map = new Map<string | null, Task[]>();
 
 		for (const task of taskList) {
 			const key = task.section ?? null;
-			if (!map.has(key)) {
-				sectionOrder.push(key);
-				map.set(key, []);
-			}
+			if (!map.has(key)) map.set(key, []);
 			map.get(key)!.push(task);
 		}
 
-		// Named sections first, then the null/unsectioned group at the end
-		const named: Section[] = [];
-		let unsectioned: Section | null = null;
-
-		for (const name of sectionOrder) {
-			const section: Section = { name, tasks: map.get(name)! };
-			if (name === null) {
-				unsectioned = section;
-			} else {
-				named.push(section);
-			}
-		}
-
-		return unsectioned ? [...named, unsectioned] : named;
+		// Sort sections deterministically by name (numeric-aware so
+		// "Phase 0" < "Phase 1" < "Phase 2" etc.). Null/unsectioned last.
+		return [...map.entries()]
+			.map(([name, tasks]) => ({ name, tasks }))
+			.sort((a, b) => {
+				if (a.name === null) return 1;
+				if (b.name === null) return -1;
+				return a.name.localeCompare(b.name, undefined, { numeric: true });
+			});
 	}
 
 	const sections = $derived(buildSections(localTasks));
 
 	// ── Collapsible sections ───────────────────────────────────────────────────
+	// Plain object instead of Map — Svelte 5's proxy-based reactivity
+	// reliably tracks property access/mutation on plain objects.
 
-	const collapsed = $state(new Map<string | null, boolean>());
+	let collapsed: Record<string, boolean> = $state({});
+
+	function collapseKey(name: string | null): string {
+		return name ?? '__unsectioned__';
+	}
 
 	function toggleSection(name: string | null) {
-		collapsed.set(name, !collapsed.get(name));
+		const key = collapseKey(name);
+		collapsed[key] = !collapsed[key];
 	}
 
 	function isCollapsed(name: string | null): boolean {
-		return collapsed.get(name) ?? false;
+		return collapsed[collapseKey(name)] ?? false;
 	}
 
 	// ── Optimistic patch from TaskRow ──────────────────────────────────────────
@@ -188,7 +186,7 @@
 					{#if !isCollapsed(section.name)}
 						<ul
 							class="flex flex-col divide-y divide-border overflow-hidden rounded-lg border border-border"
-							use:dndzone={{
+							use:dragHandleZone={{
 								items: section.tasks,
 								flipDurationMs: FLIP_MS,
 								type: sectionType(section.name),
@@ -199,7 +197,7 @@
 						>
 							{#each section.tasks as task (task.id)}
 								<li>
-									<TaskRow {task} {slug} onpatch={handleTaskPatch} onopen={openDetail} />
+									<TaskRow {task} {slug} {dragHandle} onpatch={handleTaskPatch} onopen={openDetail} />
 								</li>
 							{/each}
 						</ul>
