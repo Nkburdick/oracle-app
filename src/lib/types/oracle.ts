@@ -93,7 +93,8 @@ export interface OracleEvent {
 		| 'project-created'
 		| 'area-created'
 		| 'project-deleted'
-		| 'area-deleted';
+		| 'area-deleted'
+		| 'tasks-updated';
 	slug: string;
 	timestamp: string;
 }

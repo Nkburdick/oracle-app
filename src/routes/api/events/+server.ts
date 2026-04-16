@@ -17,8 +17,9 @@ function initWatcher() {
 	const dataRoot = getDataRoot();
 	const projectsGlob = join(dataRoot, 'Projects', '**', '*.md');
 	const areasGlob = join(dataRoot, 'Areas', '**', '*.md');
+	const tasksGlob = join(dataRoot, 'Projects', '**', 'tasks.json');
 
-	const watcher = watch([projectsGlob, areasGlob], {
+	const watcher = watch([projectsGlob, areasGlob, tasksGlob], {
 		persistent: true,
 		ignoreInitial: true,
 		awaitWriteFinish: { stabilityThreshold: 500, pollInterval: 100 }
@@ -44,10 +45,11 @@ function initWatcher() {
 	}
 
 	watcher.on('change', (filePath: string) => {
-		const isProject = filePath.includes('Projects');
 		const slug = slugFromPath(filePath);
+		const isTasksFile = filePath.endsWith('tasks.json');
+		const isProject = filePath.includes('Projects');
 		broadcast({
-			type: isProject ? 'project-updated' : 'area-updated',
+			type: isTasksFile ? 'tasks-updated' : isProject ? 'project-updated' : 'area-updated',
 			slug,
 			timestamp: new Date().toISOString()
 		});
