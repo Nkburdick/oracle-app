@@ -8,7 +8,7 @@ const SLUG_RE = /^[a-z0-9-]+$/;
 /**
  * PATCH /api/projects/[slug]/tasks/[id]
  *
- * Proxies to Pennyworth's `PATCH /api/tasks/:id`.
+ * Proxies to Pennyworth's `PATCH /api/oracle/projects/:slug/tasks/:id`.
  */
 export const PATCH: RequestHandler = async ({ params, request }) => {
 	if (!SLUG_RE.test(params.slug)) {
@@ -34,7 +34,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 	}
 
 	try {
-		const task = await patchTask(baseUrl, params.id, body);
+		const task = await patchTask(baseUrl, params.slug, params.id, body);
 		return json({ task });
 	} catch (err) {
 		const message = (err as Error).message;
@@ -48,7 +48,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 /**
  * DELETE /api/projects/[slug]/tasks/[id]
  *
- * Proxies to Pennyworth's `DELETE /api/tasks/:id`.
+ * Proxies to Pennyworth's `DELETE /api/oracle/projects/:slug/tasks/:id`.
  */
 export const DELETE: RequestHandler = async ({ params }) => {
 	if (!SLUG_RE.test(params.slug)) {
@@ -63,7 +63,7 @@ export const DELETE: RequestHandler = async ({ params }) => {
 	}
 
 	try {
-		const deleted = await deleteTask(baseUrl, params.id);
+		const deleted = await deleteTask(baseUrl, params.slug, params.id);
 		return json({ deleted });
 	} catch (err) {
 		const message = (err as Error).message;

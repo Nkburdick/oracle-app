@@ -58,11 +58,14 @@ export interface PatchTaskBody {
 	sort_order?: number;
 }
 
+function tasksBasePath(oracleSlug: string): string {
+	return `/api/oracle/projects/${encodeURIComponent(oracleSlug)}/tasks`;
+}
+
 // ─── 1. List tasks for a project ─────────────────────────────────────────────
 
 export async function listTasks(baseUrl: string, oracleSlug: string): Promise<Task[]> {
-	const params = new URLSearchParams({ oracle_slug: oracleSlug });
-	const res = await tasksFetch(`${baseUrl}/api/tasks?${params}`);
+	const res = await tasksFetch(`${baseUrl}${tasksBasePath(oracleSlug)}`);
 	const data = (await res.json()) as { tasks: Task[] };
 	return data.tasks;
 }
@@ -74,9 +77,9 @@ export async function createTask(
 	oracleSlug: string,
 	body: CreateTaskBody
 ): Promise<Task> {
-	const res = await tasksFetch(`${baseUrl}/api/tasks`, {
+	const res = await tasksFetch(`${baseUrl}${tasksBasePath(oracleSlug)}`, {
 		method: 'POST',
-		body: JSON.stringify({ ...body, oracle_slug: oracleSlug })
+		body: JSON.stringify(body)
 	});
 	const data = (await res.json()) as { task: Task };
 	return data.task;
@@ -86,33 +89,51 @@ export async function createTask(
 
 export async function patchTask(
 	baseUrl: string,
+	oracleSlug: string,
 	taskId: string,
 	body: PatchTaskBody
 ): Promise<Task> {
-	const res = await tasksFetch(`${baseUrl}/api/tasks/${encodeURIComponent(taskId)}`, {
-		method: 'PATCH',
-		body: JSON.stringify(body)
-	});
+	const res = await tasksFetch(
+		`${baseUrl}${tasksBasePath(oracleSlug)}/${encodeURIComponent(taskId)}`,
+		{
+			method: 'PATCH',
+			body: JSON.stringify(body)
+		}
+	);
 	const data = (await res.json()) as { task: Task };
 	return data.task;
 }
 
 // ─── 4. Delete a task ────────────────────────────────────────────────────────
 
-export async function deleteTask(baseUrl: string, taskId: string): Promise<string> {
-	const res = await tasksFetch(`${baseUrl}/api/tasks/${encodeURIComponent(taskId)}`, {
-		method: 'DELETE'
-	});
+export async function deleteTask(
+	baseUrl: string,
+	oracleSlug: string,
+	taskId: string
+): Promise<string> {
+	const res = await tasksFetch(
+		`${baseUrl}${tasksBasePath(oracleSlug)}/${encodeURIComponent(taskId)}`,
+		{
+			method: 'DELETE'
+		}
+	);
 	const data = (await res.json()) as { deleted: string };
 	return data.deleted;
 }
 
 // ─── 5. Promote a task to a GitHub issue ─────────────────────────────────────
 
-export async function promoteTask(baseUrl: string, taskId: string): Promise<Task> {
-	const res = await tasksFetch(`${baseUrl}/api/tasks/${encodeURIComponent(taskId)}/promote`, {
-		method: 'POST'
-	});
+export async function promoteTask(
+	baseUrl: string,
+	oracleSlug: string,
+	taskId: string
+): Promise<Task> {
+	const res = await tasksFetch(
+		`${baseUrl}${tasksBasePath(oracleSlug)}/${encodeURIComponent(taskId)}/promote`,
+		{
+			method: 'POST'
+		}
+	);
 	const data = (await res.json()) as { task: Task };
 	return data.task;
 }
