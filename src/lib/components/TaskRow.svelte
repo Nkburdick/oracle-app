@@ -1,17 +1,20 @@
 <script lang="ts">
 	import { GripVertical, GitBranch, CheckCircle2 } from 'lucide-svelte';
+	import type { Action } from 'svelte/action';
 	import type { Task, TaskStatus, TaskAssignee } from '$lib/types/oracle-task.js';
 
 	interface Props {
 		task: Task;
 		slug: string;
+		/** svelte-dnd-action dragHandle action — restricts drag to the grip icon */
+		dragHandle?: Action;
 		/** Optimistic-update callback so the parent can track mutations */
 		onpatch?: (id: string, patch: Partial<Task>) => void;
 		/** Called when the user taps the task content to open the detail sheet */
 		onopen?: (task: Task) => void;
 	}
 
-	const { task, slug, onpatch, onopen }: Props = $props();
+	const { task, slug, dragHandle, onpatch, onopen }: Props = $props();
 
 	// ── Status helpers ────────────────────────────────────────────────────────
 
@@ -239,14 +242,25 @@
 		class="relative flex items-center gap-2 bg-card px-3 py-3 transition-transform"
 		style="transform: translateX({swipeOffsetX}px)"
 	>
-		<!-- Drag handle — touch-none restricts touch-drag to this element on mobile -->
-		<span
-			class="touch-none flex-shrink-0 cursor-grab p-0.5 text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
-			aria-label="Drag to reorder"
-			role="img"
-		>
-			<GripVertical size={14} />
-		</span>
+		<!-- Drag handle — only this element initiates drag (dragHandleZone) -->
+		{#if dragHandle}
+			<span
+				use:dragHandle
+				class="touch-none flex-shrink-0 cursor-grab p-1 text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
+				aria-label="Drag to reorder"
+				role="img"
+			>
+				<GripVertical size={14} />
+			</span>
+		{:else}
+			<span
+				class="touch-none flex-shrink-0 cursor-grab p-1 text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
+				aria-label="Drag to reorder"
+				role="img"
+			>
+				<GripVertical size={14} />
+			</span>
+		{/if}
 
 		<!-- Status pill — tap to cycle -->
 		<button

@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types.js';
 	import { page } from '$app/stores';
+	import { invalidate } from '$app/navigation';
 	import ProjectChats from '$lib/components/ProjectChats.svelte';
+	import PullToRefresh from '$lib/components/PullToRefresh.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -13,6 +15,10 @@
 	// browser back/forward buttons work. The layout highlights the active tab
 	// using the same param. Defaults to 'chats' (Loom #32).
 	const view = $derived($page.url.searchParams.get('view') ?? 'chats');
+
+	async function refreshProject() {
+		await invalidate(`oracle:project:${fm.slug}`);
+	}
 </script>
 
 {#if view === 'chats'}
@@ -37,9 +43,11 @@
 {:else if view === 'sow'}
 	<!-- SOW tab — Loom #31: leading H1 hidden via prose modifier to avoid a
 	     duplicate page title (the layout header already shows fm.title). -->
-	<div class="p-6" data-testid="sow-content">
-		<article class="prose [&>h1:first-child]:hidden">
-			{@html project.bodyHtml}
-		</article>
-	</div>
+	<PullToRefresh onrefresh={refreshProject}>
+		<div class="p-6" data-testid="sow-content">
+			<article class="prose [&>h1:first-child]:hidden">
+				{@html project.bodyHtml}
+			</article>
+		</div>
+	</PullToRefresh>
 {/if}

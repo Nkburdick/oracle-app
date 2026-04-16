@@ -3,10 +3,15 @@
 	import { invalidate } from '$app/navigation';
 	import type { PageData } from './$types.js';
 	import TaskBoard from '$lib/components/TaskBoard.svelte';
+	import PullToRefresh from '$lib/components/PullToRefresh.svelte';
 
 	const { data }: { data: PageData } = $props();
 
 	const slug = data.project.frontmatter.slug;
+
+	async function refresh() {
+		await invalidate(`oracle:tasks:${slug}`);
+	}
 
 	onMount(() => {
 		const es = new EventSource('/api/events');
@@ -30,8 +35,10 @@
 	});
 </script>
 
-<TaskBoard
-	tasks={data.tasks}
-	slug={data.project.frontmatter.slug}
-	githubRepo={data.project.frontmatter.platform_ids?.github_repo}
-/>
+<PullToRefresh onrefresh={refresh}>
+	<TaskBoard
+		tasks={data.tasks}
+		slug={data.project.frontmatter.slug}
+		githubRepo={data.project.frontmatter.platform_ids?.github_repo}
+	/>
+</PullToRefresh>

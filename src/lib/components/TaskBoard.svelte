@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ChevronDown, Plus } from 'lucide-svelte';
-	import { dndzone } from 'svelte-dnd-action';
+	import { dragHandleZone, dragHandle } from 'svelte-dnd-action';
 	import type { Task } from '$lib/types/oracle-task.js';
 	import TaskRow from './TaskRow.svelte';
 	import TaskDetail from './TaskDetail.svelte';
@@ -186,7 +186,7 @@
 					{#if !isCollapsed(section.name)}
 						<ul
 							class="flex flex-col divide-y divide-border overflow-hidden rounded-lg border border-border"
-							use:dndzone={{
+							use:dragHandleZone={{
 								items: section.tasks,
 								flipDurationMs: FLIP_MS,
 								type: sectionType(section.name),
@@ -197,7 +197,7 @@
 						>
 							{#each section.tasks as task (task.id)}
 								<li>
-									<TaskRow {task} {slug} onpatch={handleTaskPatch} onopen={openDetail} />
+									<TaskRow {task} {slug} {dragHandle} onpatch={handleTaskPatch} onopen={openDetail} />
 								</li>
 							{/each}
 						</ul>
