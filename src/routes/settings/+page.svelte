@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Sun, Moon } from 'lucide-svelte';
+	import { Sun, Moon, Bell, BellOff } from 'lucide-svelte';
+	import { isPushSupported, isPushGranted, subscribePush } from '$lib/push.js';
 
 	// Read version from package.json — injected at build time
 	const version = __APP_VERSION__;
@@ -8,8 +9,16 @@
 
 	let isDark = $state(false);
 
+	// ── Push notification state ───────────────────────────────────────────────
+	let pushSupported = $state(false);
+	let pushEnabled = $state(false);
+	let pushSubscribing = $state(false);
+	let pushError = $state<string | null>(null);
+
 	onMount(() => {
 		isDark = document.documentElement.classList.contains('dark');
+		pushSupported = isPushSupported();
+		pushEnabled = isPushGranted();
 	});
 
 	function toggleTheme() {
@@ -20,6 +29,19 @@
 		} else {
 			document.documentElement.classList.remove('dark');
 			localStorage.setItem('oracle:theme', 'light');
+		}
+	}
+
+	async function enablePush() {
+		pushSubscribing = true;
+		pushError = null;
+		try {
+			await subscribePush();
+			pushEnabled = true;
+		} catch (err) {
+			pushError = (err as Error).message;
+		} finally {
+			pushSubscribing = false;
 		}
 	}
 </script>
@@ -48,6 +70,50 @@
 					<Moon size={18} />
 				{/if}
 			</button>
+		</div>
+	</section>
+
+	<section class="mb-8">
+		<h2 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+			[NOTIFICATIONS]
+		</h2>
+		<div class="p-4 rounded-lg border border-border bg-card">
+			{#if pushEnabled}
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm font-medium">Push notifications</p>
+						<p class="text-xs text-muted-foreground mt-0.5">Enabled — you'll get alerts when Alfred replies</p>
+					</div>
+					<Bell size={18} class="text-primary" />
+				</div>
+			{:else if pushSupported}
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm font-medium">Push notifications</p>
+						<p class="text-xs text-muted-foreground mt-0.5">Get notified when Alfred replies</p>
+					</div>
+					<button
+						onclick={enablePush}
+						disabled={pushSubscribing}
+						class="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium disabled:opacity-50 transition-opacity hover:opacity-90"
+					>
+						{pushSubscribing ? 'Enabling...' : 'Enable'}
+					</button>
+				</div>
+				{#if pushError}
+					<p class="text-xs text-destructive mt-2">{pushError}</p>
+				{/if}
+			{:else}
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm font-medium">Push notifications</p>
+						<p class="text-xs text-muted-foreground mt-0.5">
+							Not available — open Oracle as an installed PWA to enable
+						</p>
+					</div>
+					<BellOff size={18} class="text-muted-foreground" />
+				</div>
+			{/if}
 		</div>
 	</section>
 
