@@ -8,8 +8,9 @@ const SLUG_RE = /^[a-z0-9-]+$/;
 /**
  * POST /api/projects/[slug]/tasks/[id]/promote
  *
- * Proxies to Pennyworth's `POST /api/tasks/:id/promote` which creates a
- * GitHub issue for the task and stores the issue URL in `sync.github_issue`.
+ * Proxies to Pennyworth's `POST /api/oracle/projects/:slug/tasks/:id/promote`
+ * which creates a GitHub issue for the task and stores the issue URL in
+ * `sync.github_issue`.
  */
 export const POST: RequestHandler = async ({ params }) => {
 	if (!SLUG_RE.test(params.slug)) {
@@ -24,7 +25,7 @@ export const POST: RequestHandler = async ({ params }) => {
 	}
 
 	try {
-		const task = await promoteTask(baseUrl, params.id);
+		const task = await promoteTask(baseUrl, params.slug, params.id);
 		return json({ task });
 	} catch (err) {
 		const message = (err as Error).message;
