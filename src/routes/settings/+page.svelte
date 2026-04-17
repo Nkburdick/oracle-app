@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { Sun, Moon, Bell, BellOff } from 'lucide-svelte';
-	import { isPushSupported, isPushGranted, subscribePush } from '$lib/push.js';
+	import { subscribePush } from '$lib/push.js';
 
 	// Read version from package.json — injected at build time
 	const version = __APP_VERSION__;
@@ -14,16 +15,13 @@
 	let pushEnabled = $state(false);
 	let pushSubscribing = $state(false);
 	let pushError = $state<string | null>(null);
-	let pushDiag = $state('loading...');
+	let pushDiag = $state('waiting...');
 
 	onMount(() => {
 		isDark = document.documentElement.classList.contains('dark');
-	});
 
-	// Separate onMount for push — isolates any failure from theme toggle
-	onMount(() => {
+		// Push diagnostics — all inline, no external imports
 		try {
-			// Inline checks — no dependency on $lib/push.js
 			const hasSW = 'serviceWorker' in navigator;
 			const hasPM = 'PushManager' in window;
 			const mediaStandalone = window.matchMedia('(display-mode: standalone)').matches;
@@ -35,7 +33,7 @@
 			pushSupported = hasSW && hasPM && isStandalone;
 			pushEnabled = hasNotif && Notification.permission === 'granted';
 		} catch (err) {
-			pushDiag = `ERROR: ${String(err)}`;
+			pushDiag = `ERR: ${String(err)}`;
 		}
 	});
 
