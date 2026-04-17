@@ -14,20 +14,24 @@
 	let pushEnabled = $state(false);
 	let pushSubscribing = $state(false);
 	let pushError = $state<string | null>(null);
-	let pushDiag = $state('');
+	let pushDiag = $state('loading...');
 
 	onMount(() => {
-		isDark = document.documentElement.classList.contains('dark');
-		pushSupported = isPushSupported();
-		pushEnabled = isPushGranted();
+		try {
+			isDark = document.documentElement.classList.contains('dark');
+			pushSupported = isPushSupported();
+			pushEnabled = isPushGranted();
 
-		// Diagnostics — shows exactly which push checks pass/fail
-		const hasSW = 'serviceWorker' in navigator;
-		const hasPM = 'PushManager' in window;
-		const mediaStandalone = window.matchMedia('(display-mode: standalone)').matches;
-		const navStandalone = (navigator as unknown as { standalone?: boolean }).standalone === true;
-		const hasNotif = 'Notification' in window;
-		pushDiag = `SW:${hasSW} PM:${hasPM} media:${mediaStandalone} nav.standalone:${navStandalone} Notif:${hasNotif}`;
+			// Diagnostics — shows exactly which push checks pass/fail
+			const hasSW = 'serviceWorker' in navigator;
+			const hasPM = 'PushManager' in window;
+			const mediaStandalone = window.matchMedia('(display-mode: standalone)').matches;
+			const navStandalone = (navigator as unknown as { standalone?: boolean }).standalone === true;
+			const hasNotif = 'Notification' in window;
+			pushDiag = `SW:${hasSW} PM:${hasPM} media:${mediaStandalone} nav:${navStandalone} Notif:${hasNotif}`;
+		} catch (err) {
+			pushDiag = `ERROR: ${(err as Error).message}`;
+		}
 	});
 
 	function toggleTheme() {
@@ -123,9 +127,7 @@
 					<BellOff size={18} class="text-muted-foreground" />
 				</div>
 			{/if}
-			{#if pushDiag}
-				<p class="text-[10px] text-muted-foreground/60 mt-2 font-mono border-t border-border pt-2">{pushDiag}</p>
-			{/if}
+			<p class="text-[10px] text-muted-foreground/60 mt-2 font-mono border-t border-border pt-2">{pushDiag}</p>
 		</div>
 	</section>
 
