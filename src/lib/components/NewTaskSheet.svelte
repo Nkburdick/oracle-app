@@ -8,6 +8,7 @@
 		slug: string;
 		onclose: () => void;
 		/** Called with the newly created task on success */
+		// eslint-disable-next-line no-unused-vars
 		oncreate?: (task: Task) => void;
 	}
 

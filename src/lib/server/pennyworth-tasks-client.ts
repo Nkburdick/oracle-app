@@ -24,6 +24,7 @@ async function tasksFetch(url: string, init?: RequestInit): Promise<Response> {
 	});
 
 	if (!res.ok) {
+		// eslint-disable-next-line no-useless-assignment
 		let bodyText = '';
 		try {
 			bodyText = await res.text();

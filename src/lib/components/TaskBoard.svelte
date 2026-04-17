@@ -89,7 +89,6 @@
 		return `task-section:${name ?? '__unsectioned__'}`;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	function handleConsider(sectionName: string | null, e: any) {
 		const items = e.detail.items as Task[];
 		const others = localTasks.filter((t) => (t.section ?? null) !== sectionName);
@@ -121,7 +120,6 @@
 		localTasks = [...localTasks, task];
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	async function handleFinalize(sectionName: string | null, e: any) {
 		const reorderedItems = e.detail.items as Task[];
 		const others = localTasks.filter((t) => (t.section ?? null) !== sectionName);

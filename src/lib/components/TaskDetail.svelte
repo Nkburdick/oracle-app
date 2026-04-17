@@ -20,6 +20,7 @@
 		/** platform_ids.github_repo — used as the default repo label in the promote flow */
 		githubRepo?: string;
 		onclose: () => void;
+		// eslint-disable-next-line no-unused-vars
 		onpatch?: (id: string, patch: Partial<Task>) => void;
 	}
 

@@ -9,8 +9,10 @@
 		/** svelte-dnd-action dragHandle action — restricts drag to the grip icon */
 		dragHandle?: Action;
 		/** Optimistic-update callback so the parent can track mutations */
+		// eslint-disable-next-line no-unused-vars
 		onpatch?: (id: string, patch: Partial<Task>) => void;
 		/** Called when the user taps the task content to open the detail sheet */
+		// eslint-disable-next-line no-unused-vars
 		onopen?: (task: Task) => void;
 	}
 
