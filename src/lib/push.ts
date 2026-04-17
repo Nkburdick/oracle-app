@@ -9,11 +9,12 @@
 /** Check if push is supported and the app is installed as PWA */
 export function isPushSupported(): boolean {
 	if (typeof window === 'undefined') return false;
-	return (
-		'serviceWorker' in navigator &&
-		'PushManager' in window &&
-		window.matchMedia('(display-mode: standalone)').matches
-	);
+	// iOS Safari uses navigator.standalone (non-standard) instead of the
+	// display-mode: standalone media query. Check both.
+	const isStandalone =
+		window.matchMedia('(display-mode: standalone)').matches ||
+		(navigator as unknown as { standalone?: boolean }).standalone === true;
+	return 'serviceWorker' in navigator && 'PushManager' in window && isStandalone;
 }
 
 /** Check if push permission has already been granted */
