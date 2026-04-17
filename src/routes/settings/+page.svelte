@@ -20,6 +20,9 @@
 	onMount(() => {
 		isDark = document.documentElement.classList.contains('dark');
 		pushDiag = 'MOUNTED OK';
+		// Direct DOM manipulation — bypasses Svelte entirely
+		const el = document.getElementById('push-diag-direct');
+		if (el) el.textContent = 'DIRECT DOM: onMount ran';
 	});
 
 	function toggleTheme() {
@@ -129,7 +132,10 @@
 				<span class="font-mono">{version}</span>
 			</div>
 			<div class="text-[10px] text-muted-foreground font-mono break-all">
-				{pushDiag}
+				svelte: {pushDiag}
+			</div>
+			<div id="push-diag-direct" class="text-[10px] text-destructive font-mono break-all">
+				DIRECT DOM: not yet
 			</div>
 			{#if buildSha}
 				<div class="flex justify-between text-sm">
