@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { Sun, Moon, Bell, BellOff } from 'lucide-svelte';
-	import { subscribePush } from '$lib/push.js';
 
 	// Read version from package.json — injected at build time
 	const version = __APP_VERSION__;
@@ -40,6 +39,8 @@
 		pushSubscribing = true;
 		pushError = null;
 		try {
+			// Dynamic import — avoids breaking hydration if push.js has issues
+			const { subscribePush } = await import('$lib/push.js');
 			await subscribePush();
 			pushEnabled = true;
 		} catch (err) {
