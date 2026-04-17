@@ -44,14 +44,17 @@ function isValidTask(t: unknown): t is Task {
 		typeof r.id === 'string' &&
 		typeof r.content === 'string' &&
 		(r.description === null || typeof r.description === 'string') &&
-		typeof r.status === 'string' && VALID_STATUSES.has(r.status) &&
-		typeof r.assignee === 'string' && VALID_ASSIGNEES.has(r.assignee) &&
+		typeof r.status === 'string' &&
+		VALID_STATUSES.has(r.status) &&
+		typeof r.assignee === 'string' &&
+		VALID_ASSIGNEES.has(r.assignee) &&
 		(r.phase === null || typeof r.phase === 'string') &&
 		(r.section === null || typeof r.section === 'string') &&
 		typeof r.sort_order === 'number' &&
 		typeof r.created_at === 'string' &&
 		typeof r.updated_at === 'string' &&
-		r.sync !== null && typeof r.sync === 'object'
+		r.sync !== null &&
+		typeof r.sync === 'object'
 	);
 }
 

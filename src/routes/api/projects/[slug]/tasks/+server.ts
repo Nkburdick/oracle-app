@@ -1,11 +1,7 @@
 import type { RequestHandler } from './$types.js';
 import { json, error } from '@sveltejs/kit';
 import { getPennyworthBaseUrl } from '$lib/server/pennyworth-client.js';
-import {
-	listTasks,
-	createTask,
-	type CreateTaskBody
-} from '$lib/server/pennyworth-tasks-client.js';
+import { listTasks, createTask, type CreateTaskBody } from '$lib/server/pennyworth-tasks-client.js';
 
 const SLUG_RE = /^[a-z0-9-]+$/;
 

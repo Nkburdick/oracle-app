@@ -115,7 +115,9 @@ describe('readProjectTasks', () => {
 		const invalidAssignee = makeTask({ assignee: 'robot' as Task['assignee'] });
 		const missingId = { ...makeTask(), id: undefined };
 
-		mockReadFile(JSON.stringify({ version: 1, tasks: [invalidStatus, invalidAssignee, missingId] }));
+		mockReadFile(
+			JSON.stringify({ version: 1, tasks: [invalidStatus, invalidAssignee, missingId] })
+		);
 
 		expect(await readProjectTasks('my-project')).toEqual([]);
 	});

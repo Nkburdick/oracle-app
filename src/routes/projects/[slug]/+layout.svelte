@@ -56,17 +56,12 @@
 	</header>
 
 	<!-- Tab bar -->
-	<nav
-		class="flex border-b border-border px-6 flex-shrink-0"
-		aria-label="Project sections"
-	>
+	<nav class="flex border-b border-border px-6 flex-shrink-0" aria-label="Project sections">
 		{#each tabs as tab (tab.id)}
 			<a
 				href={tab.href}
 				class="px-4 py-2.5 text-sm transition-colors relative
-					{activeTab === tab.id
-					? 'text-foreground'
-					: 'text-muted-foreground hover:text-foreground'}"
+					{activeTab === tab.id ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}"
 				aria-current={activeTab === tab.id ? 'page' : undefined}
 			>
 				{tab.label}

@@ -10,7 +10,9 @@
 	// ── Push notification state ───────────────────────────────────────────────
 	// onMount doesn't fire reliably in iOS PWA due to hydration issues.
 	// All state is driven by user interaction (button taps) instead.
-	let pushState = $state<'unknown' | 'unsupported' | 'ready' | 'enabling' | 'enabled' | 'error'>('unknown');
+	let pushState = $state<'unknown' | 'unsupported' | 'ready' | 'enabling' | 'enabled' | 'error'>(
+		'unknown'
+	);
 	let pushError = $state<string | null>(null);
 
 	function toggleTheme() {
@@ -92,7 +94,9 @@
 				<div class="flex items-center justify-between">
 					<div>
 						<p class="text-sm font-medium">Push notifications</p>
-						<p class="text-xs text-muted-foreground mt-0.5">Enabled — you'll get alerts when Alfred replies</p>
+						<p class="text-xs text-muted-foreground mt-0.5">
+							Enabled — you'll get alerts when Alfred replies
+						</p>
 					</div>
 					<Bell size={18} class="text-primary" />
 				</div>
@@ -139,7 +143,9 @@
 				<!-- unknown state — show check button -->
 				<div>
 					<p class="text-sm font-medium">Push notifications</p>
-					<p class="text-xs text-muted-foreground mt-0.5">Tap below to check if push is available</p>
+					<p class="text-xs text-muted-foreground mt-0.5">
+						Tap below to check if push is available
+					</p>
 					<button
 						type="button"
 						onclick={checkPush}

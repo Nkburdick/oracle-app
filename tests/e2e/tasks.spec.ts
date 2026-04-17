@@ -131,11 +131,7 @@ test.describe('Task board (ISC-38)', () => {
 		// Drag task-1 below task-2.
 		await page.mouse.move(box1.x + box1.width / 2, box1.y + box1.height / 2);
 		await page.mouse.down();
-		await page.mouse.move(
-			box2.x + box2.width / 2,
-			box2.y + box2.height + 5,
-			{ steps: 15 }
-		);
+		await page.mouse.move(box2.x + box2.width / 2, box2.y + box2.height + 5, { steps: 15 });
 		await page.mouse.up();
 
 		// Allow PATCH requests to complete.
@@ -184,9 +180,7 @@ test.describe('Task board (ISC-38)', () => {
 
 	// ── 5. Nick-assigned task has todoist_id synced ───────────────────────────
 
-	test('nick-assigned task has non-null sync.todoist_id via GET tasks API', async ({
-		request
-	}) => {
+	test('nick-assigned task has non-null sync.todoist_id via GET tasks API', async ({ request }) => {
 		test.skip(!pennyworthAvailable, 'Pennyworth not reachable');
 
 		const res = await request.get(TASKS_API);
@@ -200,9 +194,7 @@ test.describe('Task board (ISC-38)', () => {
 			}>;
 		};
 
-		const nickTask = tasks.find(
-			(t) => createdIds.includes(t.id) && t.assignee === 'nick'
-		);
+		const nickTask = tasks.find((t) => createdIds.includes(t.id) && t.assignee === 'nick');
 		expect(nickTask, 'Nick-assigned task should exist in GET response').toBeDefined();
 		expect(
 			nickTask!.sync.todoist_id,
@@ -212,10 +204,7 @@ test.describe('Task board (ISC-38)', () => {
 
 	// ── 6. Delete via proxy and verify UI removal ─────────────────────────────
 
-	test('deletes a task via the proxy and it disappears from the UI', async ({
-		page,
-		request
-	}) => {
+	test('deletes a task via the proxy and it disappears from the UI', async ({ page, request }) => {
 		test.skip(!pennyworthAvailable, 'Pennyworth not reachable');
 		test.skip(createdIds.length === 0, 'No tasks were created – nothing to delete');
 

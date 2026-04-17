@@ -59,7 +59,9 @@ exclude any `.DS_Store` files from staging.
 ## Drizzle Migrations
 
 When adding or modifying a Drizzle schema table, you MUST generate AND commit the migration:
+
 ```bash
 bunx drizzle-kit generate
 ```
+
 Schema-only changes without a migration silently break queries at runtime.

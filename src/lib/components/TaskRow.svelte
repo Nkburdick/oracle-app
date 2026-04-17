@@ -265,8 +265,9 @@
 		<!-- Status pill — tap to cycle -->
 		<button
 			type="button"
-			class="flex-shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-80 {STATUS_COLORS[optimisticStatus] ??
-				'bg-muted text-muted-foreground'}"
+			class="flex-shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-80 {STATUS_COLORS[
+				optimisticStatus
+			] ?? 'bg-muted text-muted-foreground'}"
 			onclick={cycleStatus}
 			aria-label="Status: {STATUS_LABELS[optimisticStatus]}. Tap to cycle."
 			title="Tap to cycle status"
@@ -278,7 +279,10 @@
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="min-w-0 flex-1 {onopen ? 'cursor-pointer' : ''}"
-			onclick={(e) => { e.stopPropagation(); onopen?.(task); }}
+			onclick={(e) => {
+				e.stopPropagation();
+				onopen?.(task);
+			}}
 		>
 			<p
 				class="text-sm leading-snug {optimisticStatus === 'done'
@@ -291,7 +295,9 @@
 				<p class="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{task.description}</p>
 			{/if}
 			{#if task.phase}
-				<span class="mt-0.5 inline-block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+				<span
+					class="mt-0.5 inline-block text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+				>
 					{task.phase}
 				</span>
 			{/if}
@@ -326,7 +332,9 @@
 			<div class="relative">
 				<button
 					type="button"
-					class="rounded px-1.5 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-80 {ASSIGNEE_COLORS[optimisticAssignee]}"
+					class="rounded px-1.5 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-80 {ASSIGNEE_COLORS[
+						optimisticAssignee
+					]}"
 					onclick={toggleAssigneeDropdown}
 					aria-haspopup="listbox"
 					aria-expanded={showAssigneeDropdown}

@@ -150,7 +150,9 @@
 			<p class="text-sm text-muted-foreground">No tasks yet. Create the first one.</p>
 			<button
 				type="button"
-				onclick={() => { showNewTask = true; }}
+				onclick={() => {
+					showNewTask = true;
+				}}
 				class="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
 				aria-label="Create first task"
 			>
@@ -197,7 +199,13 @@
 						>
 							{#each section.tasks as task (task.id)}
 								<li>
-									<TaskRow {task} {slug} {dragHandle} onpatch={handleTaskPatch} onopen={openDetail} />
+									<TaskRow
+										{task}
+										{slug}
+										{dragHandle}
+										onpatch={handleTaskPatch}
+										onopen={openDetail}
+									/>
 								</li>
 							{/each}
 						</ul>
@@ -205,14 +213,15 @@
 				</section>
 			{/each}
 		</div>
-
 	{/if}
 </div>
 
 <!-- FAB — always visible, opens NewTaskSheet -->
 <button
 	type="button"
-	onclick={() => { showNewTask = true; }}
+	onclick={() => {
+		showNewTask = true;
+	}}
 	class="fixed bottom-20 right-5 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-opacity hover:opacity-90 lg:bottom-6 lg:right-6"
 	aria-label="Create new task"
 >
@@ -234,7 +243,9 @@
 {#if showNewTask}
 	<NewTaskSheet
 		{slug}
-		onclose={() => { showNewTask = false; }}
+		onclose={() => {
+			showNewTask = false;
+		}}
 		oncreate={handleCreated}
 	/>
 {/if}
