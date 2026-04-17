@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
 	import { Sun, Moon, Bell, BellOff } from 'lucide-svelte';
 
 	// Read version from package.json — injected at build time
@@ -10,19 +8,10 @@
 	let isDark = $state(false);
 
 	// ── Push notification state ───────────────────────────────────────────────
-	let pushSupported = $state(false);
-	let pushEnabled = $state(false);
-	let pushSubscribing = $state(false);
+	// onMount doesn't fire reliably in iOS PWA due to hydration issues.
+	// All state is driven by user interaction (button taps) instead.
+	let pushState = $state<'unknown' | 'unsupported' | 'ready' | 'enabling' | 'enabled' | 'error'>('unknown');
 	let pushError = $state<string | null>(null);
-	let pushDiag = $state('waiting...');
-
-	onMount(() => {
-		isDark = document.documentElement.classList.contains('dark');
-		pushDiag = 'MOUNTED OK';
-		// Direct DOM manipulation — bypasses Svelte entirely
-		const el = document.getElementById('push-diag-direct');
-		if (el) el.textContent = 'DIRECT DOM: onMount ran';
-	});
 
 	function toggleTheme() {
 		isDark = !isDark;
@@ -35,18 +24,34 @@
 		}
 	}
 
+	function checkPush() {
+		const hasSW = 'serviceWorker' in navigator;
+		const hasPM = 'PushManager' in window;
+		const hasNotif = 'Notification' in window;
+
+		if (!hasSW || !hasPM || !hasNotif) {
+			pushState = 'unsupported';
+			return;
+		}
+
+		if (Notification.permission === 'granted') {
+			pushState = 'enabled';
+			return;
+		}
+
+		pushState = 'ready';
+	}
+
 	async function enablePush() {
-		pushSubscribing = true;
+		pushState = 'enabling';
 		pushError = null;
 		try {
-			// Dynamic import — avoids breaking hydration if push.js has issues
 			const { subscribePush } = await import('$lib/push.js');
 			await subscribePush();
-			pushEnabled = true;
+			pushState = 'enabled';
 		} catch (err) {
 			pushError = (err as Error).message;
-		} finally {
-			pushSubscribing = false;
+			pushState = 'error';
 		}
 	}
 </script>
@@ -83,7 +88,7 @@
 			[NOTIFICATIONS]
 		</h2>
 		<div class="p-4 rounded-lg border border-border bg-card">
-			{#if pushEnabled}
+			{#if pushState === 'enabled'}
 				<div class="flex items-center justify-between">
 					<div>
 						<p class="text-sm font-medium">Push notifications</p>
@@ -91,7 +96,7 @@
 					</div>
 					<Bell size={18} class="text-primary" />
 				</div>
-			{:else if pushSupported}
+			{:else if pushState === 'ready'}
 				<div class="flex items-center justify-between">
 					<div>
 						<p class="text-sm font-medium">Push notifications</p>
@@ -99,41 +104,51 @@
 					</div>
 					<button
 						onclick={enablePush}
-						disabled={pushSubscribing}
-						class="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium disabled:opacity-50 transition-opacity hover:opacity-90"
+						class="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium transition-opacity hover:opacity-90"
 					>
-						{pushSubscribing ? 'Enabling...' : 'Enable'}
+						Enable
 					</button>
 				</div>
-				{#if pushError}
-					<p class="text-xs text-destructive mt-2">{pushError}</p>
-				{/if}
-			{:else}
+			{:else if pushState === 'enabling'}
 				<div class="flex items-center justify-between">
 					<div>
 						<p class="text-sm font-medium">Push notifications</p>
-						<p class="text-xs text-muted-foreground mt-0.5">
-							Not available — open Oracle as an installed PWA to enable
-						</p>
+						<p class="text-xs text-muted-foreground mt-0.5">Enabling...</p>
+					</div>
+				</div>
+			{:else if pushState === 'error'}
+				<div>
+					<p class="text-sm font-medium">Push notifications</p>
+					<p class="text-xs text-destructive mt-0.5">{pushError}</p>
+					<button
+						onclick={enablePush}
+						class="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium"
+					>
+						Retry
+					</button>
+				</div>
+			{:else if pushState === 'unsupported'}
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm font-medium">Push notifications</p>
+						<p class="text-xs text-muted-foreground mt-0.5">Not supported on this device/browser</p>
 					</div>
 					<BellOff size={18} class="text-muted-foreground" />
 				</div>
+			{:else}
+				<!-- unknown state — show check button -->
+				<div>
+					<p class="text-sm font-medium">Push notifications</p>
+					<p class="text-xs text-muted-foreground mt-0.5">Tap below to check if push is available</p>
+					<button
+						type="button"
+						onclick={checkPush}
+						class="mt-2 w-full px-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-medium"
+					>
+						Check push support
+					</button>
+				</div>
 			{/if}
-			<button
-				type="button"
-				onclick={() => {
-					const hasSW = 'serviceWorker' in navigator;
-					const hasPM = 'PushManager' in window;
-					const hasNotif = 'Notification' in window;
-					const media = window.matchMedia('(display-mode: standalone)').matches;
-					const nav = (navigator as unknown as { standalone?: boolean }).standalone === true;
-					pushDiag = `SW:${hasSW} PM:${hasPM} media:${media} nav:${nav} Notif:${hasNotif}`;
-				}}
-				class="mt-2 w-full px-3 py-2 bg-accent text-foreground rounded-lg text-xs font-medium border border-border"
-			>
-				Tap to check push support
-			</button>
-			<p class="text-[10px] text-muted-foreground/60 mt-2 font-mono border-t border-border pt-2">{pushDiag}</p>
 		</div>
 	</section>
 
@@ -146,15 +161,6 @@
 				<span class="text-muted-foreground">Version</span>
 				<span class="font-mono">{version}</span>
 			</div>
-			<div class="text-[10px] text-muted-foreground font-mono break-all">
-				svelte: {pushDiag}
-			</div>
-			<div id="push-diag-direct" class="text-[10px] text-destructive font-mono break-all">
-				DIRECT DOM: not yet
-			</div>
-			<div id="push-diag-inline" class="text-[10px] text-green-500 font-mono break-all">
-				INLINE: not yet
-			</div>
 			{#if buildSha}
 				<div class="flex justify-between text-sm">
 					<span class="text-muted-foreground">Build</span>
@@ -164,19 +170,3 @@
 		</div>
 	</section>
 </div>
-
-<svelte:head>
-	{@html `<script>
-		setTimeout(function() {
-			var el = document.getElementById('push-diag-inline');
-			if (el) {
-				var hasSW = 'serviceWorker' in navigator;
-				var hasPM = 'PushManager' in window;
-				var media = window.matchMedia('(display-mode: standalone)').matches;
-				var nav = !!(navigator.standalone);
-				var notif = 'Notification' in window;
-				el.textContent = 'SW:' + hasSW + ' PM:' + hasPM + ' media:' + media + ' nav:' + nav + ' Notif:' + notif;
-			}
-		}, 1000);
-	</script>`}
-</svelte:head>
