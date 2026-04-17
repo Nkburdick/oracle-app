@@ -143,6 +143,9 @@
 				<span class="text-muted-foreground">Version</span>
 				<span class="font-mono">{version}</span>
 			</div>
+			<div class="text-[10px] text-muted-foreground font-mono break-all">
+				{pushDiag}
+			</div>
 			{#if buildSha}
 				<div class="flex justify-between text-sm">
 					<span class="text-muted-foreground">Build</span>
