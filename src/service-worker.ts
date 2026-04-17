@@ -1,7 +1,13 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute } from 'workbox-precaching';
+import { clientsClaim } from 'workbox-core';
 
 declare const self: ServiceWorkerGlobalScope;
+
+// Activate new service workers immediately — don't wait for all tabs to close.
+// Critical for PWA: without this, iOS can serve stale cached JS for days.
+self.skipWaiting();
+clientsClaim();
 
 // Workbox injects the precache manifest here at build time.
 // This caches the app shell (HTML, CSS, JS, fonts) for fast startup.
