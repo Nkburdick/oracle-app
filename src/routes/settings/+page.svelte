@@ -119,6 +119,20 @@
 					<BellOff size={18} class="text-muted-foreground" />
 				</div>
 			{/if}
+			<button
+				type="button"
+				onclick={() => {
+					const hasSW = 'serviceWorker' in navigator;
+					const hasPM = 'PushManager' in window;
+					const hasNotif = 'Notification' in window;
+					const media = window.matchMedia('(display-mode: standalone)').matches;
+					const nav = (navigator as unknown as { standalone?: boolean }).standalone === true;
+					pushDiag = `SW:${hasSW} PM:${hasPM} media:${media} nav:${nav} Notif:${hasNotif}`;
+				}}
+				class="mt-2 w-full px-3 py-2 bg-accent text-foreground rounded-lg text-xs font-medium border border-border"
+			>
+				Tap to check push support
+			</button>
 			<p class="text-[10px] text-muted-foreground/60 mt-2 font-mono border-t border-border pt-2">{pushDiag}</p>
 		</div>
 	</section>
