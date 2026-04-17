@@ -17,20 +17,25 @@
 	let pushDiag = $state('loading...');
 
 	onMount(() => {
-		try {
-			isDark = document.documentElement.classList.contains('dark');
-			pushSupported = isPushSupported();
-			pushEnabled = isPushGranted();
+		isDark = document.documentElement.classList.contains('dark');
+	});
 
-			// Diagnostics — shows exactly which push checks pass/fail
+	// Separate onMount for push — isolates any failure from theme toggle
+	onMount(() => {
+		try {
+			// Inline checks — no dependency on $lib/push.js
 			const hasSW = 'serviceWorker' in navigator;
 			const hasPM = 'PushManager' in window;
 			const mediaStandalone = window.matchMedia('(display-mode: standalone)').matches;
 			const navStandalone = (navigator as unknown as { standalone?: boolean }).standalone === true;
 			const hasNotif = 'Notification' in window;
+			const isStandalone = mediaStandalone || navStandalone;
+
 			pushDiag = `SW:${hasSW} PM:${hasPM} media:${mediaStandalone} nav:${navStandalone} Notif:${hasNotif}`;
+			pushSupported = hasSW && hasPM && isStandalone;
+			pushEnabled = hasNotif && Notification.permission === 'granted';
 		} catch (err) {
-			pushDiag = `ERROR: ${(err as Error).message}`;
+			pushDiag = `ERROR: ${String(err)}`;
 		}
 	});
 
