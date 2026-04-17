@@ -119,12 +119,12 @@
 						<p class="text-xs text-muted-foreground mt-0.5">
 							Not available — open Oracle as an installed PWA to enable
 						</p>
-						{#if pushDiag}
-							<p class="text-[10px] text-muted-foreground/60 mt-1 font-mono">{pushDiag}</p>
-						{/if}
 					</div>
 					<BellOff size={18} class="text-muted-foreground" />
 				</div>
+			{/if}
+			{#if pushDiag}
+				<p class="text-[10px] text-muted-foreground/60 mt-2 font-mono border-t border-border pt-2">{pushDiag}</p>
 			{/if}
 		</div>
 	</section>
