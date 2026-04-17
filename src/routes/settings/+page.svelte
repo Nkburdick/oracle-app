@@ -138,6 +138,9 @@
 			<div id="push-diag-direct" class="text-[10px] text-destructive font-mono break-all">
 				DIRECT DOM: not yet
 			</div>
+			<div id="push-diag-inline" class="text-[10px] text-green-500 font-mono break-all">
+				INLINE: not yet
+			</div>
 			{#if buildSha}
 				<div class="flex justify-between text-sm">
 					<span class="text-muted-foreground">Build</span>
@@ -147,3 +150,19 @@
 		</div>
 	</section>
 </div>
+
+<svelte:head>
+	{@html `<script>
+		setTimeout(function() {
+			var el = document.getElementById('push-diag-inline');
+			if (el) {
+				var hasSW = 'serviceWorker' in navigator;
+				var hasPM = 'PushManager' in window;
+				var media = window.matchMedia('(display-mode: standalone)').matches;
+				var nav = !!(navigator.standalone);
+				var notif = 'Notification' in window;
+				el.textContent = 'SW:' + hasSW + ' PM:' + hasPM + ' media:' + media + ' nav:' + nav + ' Notif:' + notif;
+			}
+		}, 1000);
+	</script>`}
+</svelte:head>
