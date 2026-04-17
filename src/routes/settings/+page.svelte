@@ -19,22 +19,7 @@
 
 	onMount(() => {
 		isDark = document.documentElement.classList.contains('dark');
-
-		// Push diagnostics — all inline, no external imports
-		try {
-			const hasSW = 'serviceWorker' in navigator;
-			const hasPM = 'PushManager' in window;
-			const mediaStandalone = window.matchMedia('(display-mode: standalone)').matches;
-			const navStandalone = (navigator as unknown as { standalone?: boolean }).standalone === true;
-			const hasNotif = 'Notification' in window;
-			const isStandalone = mediaStandalone || navStandalone;
-
-			pushDiag = `SW:${hasSW} PM:${hasPM} media:${mediaStandalone} nav:${navStandalone} Notif:${hasNotif}`;
-			pushSupported = hasSW && hasPM && isStandalone;
-			pushEnabled = hasNotif && Notification.permission === 'granted';
-		} catch (err) {
-			pushDiag = `ERR: ${String(err)}`;
-		}
+		pushDiag = 'MOUNTED OK';
 	});
 
 	function toggleTheme() {
