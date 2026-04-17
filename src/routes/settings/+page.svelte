@@ -14,11 +14,20 @@
 	let pushEnabled = $state(false);
 	let pushSubscribing = $state(false);
 	let pushError = $state<string | null>(null);
+	let pushDiag = $state('');
 
 	onMount(() => {
 		isDark = document.documentElement.classList.contains('dark');
 		pushSupported = isPushSupported();
 		pushEnabled = isPushGranted();
+
+		// Diagnostics — shows exactly which push checks pass/fail
+		const hasSW = 'serviceWorker' in navigator;
+		const hasPM = 'PushManager' in window;
+		const mediaStandalone = window.matchMedia('(display-mode: standalone)').matches;
+		const navStandalone = (navigator as unknown as { standalone?: boolean }).standalone === true;
+		const hasNotif = 'Notification' in window;
+		pushDiag = `SW:${hasSW} PM:${hasPM} media:${mediaStandalone} nav.standalone:${navStandalone} Notif:${hasNotif}`;
 	});
 
 	function toggleTheme() {
@@ -110,6 +119,9 @@
 						<p class="text-xs text-muted-foreground mt-0.5">
 							Not available — open Oracle as an installed PWA to enable
 						</p>
+						{#if pushDiag}
+							<p class="text-[10px] text-muted-foreground/60 mt-1 font-mono">{pushDiag}</p>
+						{/if}
 					</div>
 					<BellOff size={18} class="text-muted-foreground" />
 				</div>
