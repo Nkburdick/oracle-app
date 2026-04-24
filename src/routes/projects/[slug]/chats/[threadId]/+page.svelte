@@ -283,7 +283,9 @@
 
 			streamingMessageId = null;
 			await tick();
-			textareaEl?.focus();
+			textareaEl?.focus({ preventScroll: true });
+			textareaEl?.scrollIntoView({ block: 'end', behavior: 'instant' });
+			if (messagesContainerEl) messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
 			reconcileMessages(threadId);
 
 			// Show push prompt after first successful chat response
@@ -332,7 +334,9 @@
 			};
 			messages = [...messages, assistantMessage];
 			await tick();
-			textareaEl?.focus();
+			textareaEl?.focus({ preventScroll: true });
+			textareaEl?.scrollIntoView({ block: 'end', behavior: 'instant' });
+			if (messagesContainerEl) messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
 			reconcileMessages(threadId);
 		} catch (err) {
 			messages = messages.filter((m) => m.id !== optimisticId);
@@ -481,7 +485,7 @@
 	}
 </script>
 
-<div class="flex flex-col h-[100dvh] md:h-full" data-testid="mobile-chat-page" data-chat-thread>
+<div class="flex flex-col h-full" data-testid="mobile-chat-page" data-chat-thread>
 	<!-- ── Chat Header (AC-18) — safe-area-inset-top for standalone PWA ── -->
 	<header
 		class="flex items-center gap-1 px-1 py-1 border-b border-border flex-shrink-0 bg-card min-h-[52px]"
