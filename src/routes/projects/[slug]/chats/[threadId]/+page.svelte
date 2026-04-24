@@ -191,11 +191,7 @@
 	}
 
 	async function sendCurrentMessage(): Promise<void> {
-		// Read the textarea directly as a fallback for `draft`. On iOS PWA
-		// bind:value + $state assignments from event handlers do not always
-		// propagate (see feedback_ios_pwa_hydration.md). Pulling straight from
-		// the DOM sidesteps the reactivity layer entirely when it's needed.
-		const text = (textareaEl?.value ?? draft).trim();
+		const text = draft.trim();
 		if (text === '' || sending || !localThread) return;
 
 		const threadId = localThread.id;
@@ -209,13 +205,9 @@
 		};
 
 		messages = [...messages, optimisticMessage];
-		const previousDraft = textareaEl?.value ?? draft;
+		const previousDraft = draft;
 		draft = '';
 		if (textareaEl) {
-			// bind:value may not push '' back to the DOM on iOS PWA — clear
-			// the textarea explicitly so the user sees their message vanish
-			// from the composer after send (feedback_ios_pwa_hydration.md).
-			textareaEl.value = '';
 			textareaEl.style.height = 'auto';
 		}
 		sending = true;
@@ -306,7 +298,6 @@
 			streamingMessageId = null;
 			messages = messages.filter((m) => m.id !== optimisticId && m.id !== assistantId);
 			draft = previousDraft;
-			if (textareaEl) textareaEl.value = previousDraft;
 			sendError = (err as Error).message;
 		} finally {
 			sending = false;
@@ -352,7 +343,6 @@
 		} catch (err) {
 			messages = messages.filter((m) => m.id !== optimisticId);
 			draft = previousDraft;
-			if (textareaEl) textareaEl.value = previousDraft;
 			sendError = (err as Error).message;
 		} finally {
 			sending = false;
@@ -383,13 +373,6 @@
 	// Auto-grow textarea from 1 to 4 lines (AC-26)
 	function handleTextareaInput(event: Event): void {
 		const el = event.target as HTMLTextAreaElement;
-		// Explicitly mirror the DOM value into the `draft` rune. `bind:value`
-		// already does this on desktop / Android, but in the iOS standalone
-		// PWA the bind doesn't reliably propagate — see
-		// feedback_ios_pwa_hydration.md. Without this line the user can type
-		// into the composer but `draft` stays "", leaving the send button
-		// stuck in its disabled state and making it look unresponsive.
-		draft = el.value;
 		el.style.height = 'auto';
 		// 4 lines × ~24px line-height + 16px vertical padding
 		const maxHeight = 4 * 24 + 16;
@@ -695,21 +678,11 @@
 				data-testid="message-input"
 			></textarea>
 
-			<!--
-				Send button: 44×44 minimum touch target (AC-27, AC-28).
-				disabled is gated on `sending` only (not `draft.trim() === ''`)
-				because on iOS PWA, Svelte 5 state assignments from bind:value
-				and event handlers don't always propagate into reactive
-				expressions (see feedback_ios_pwa_hydration.md). Using draft in
-				`disabled` means the button can be stuck in its disabled state
-				even when the textarea has content, and a user tap produces no
-				feedback. The empty-string guard has been moved into
-				sendCurrentMessage() which reads the textarea value directly.
-			-->
+			<!-- Send button: 44×44 minimum touch target (AC-27, AC-28) -->
 			<button
 				type="button"
 				onclick={() => void sendCurrentMessage()}
-				disabled={sending}
+				disabled={sending || draft.trim() === ''}
 				class="flex items-center justify-center w-11 h-11 min-w-[44px] min-h-[44px] bg-primary text-primary-foreground rounded-2xl disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors flex-shrink-0"
 				aria-label="Send message"
 				data-testid="send-button"
