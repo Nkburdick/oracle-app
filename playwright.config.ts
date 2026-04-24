@@ -1,4 +1,5 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
+import { devices } from '@playwright/test';
 
 const config: PlaywrightTestConfig = {
 	webServer: {
@@ -15,6 +16,13 @@ const config: PlaywrightTestConfig = {
 		{
 			name: 'chromium',
 			use: { browserName: 'chromium' }
+		},
+		{
+			name: 'mobile-webkit-iphone15pro',
+			testMatch: '**/chat-composer-viewport.spec.ts',
+			use: {
+				...devices['iPhone 15 Pro']
+			}
 		}
 	]
 };

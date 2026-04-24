@@ -253,7 +253,9 @@
 			messagesError = null;
 			threadsError = null;
 			await tick();
-			messageInputEl?.focus();
+			messageInputEl?.focus({ preventScroll: true });
+			messageInputEl?.scrollIntoView({ block: 'end', behavior: 'instant' });
+			if (messagesContainerEl) messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
 		} catch (err) {
 			threadsError = (err as Error).message;
 		}
@@ -406,7 +408,10 @@
 			if (activeThreadId === threadId) {
 				streamingMessageId = null;
 				await tick();
-				messageInputEl?.focus();
+				messageInputEl?.focus({ preventScroll: true });
+				messageInputEl?.scrollIntoView({ block: 'end', behavior: 'instant' });
+				if (messagesContainerEl && isScrolledToBottom)
+					messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
 				reconcileMessages(threadId);
 
 				// Show push prompt after first successful chat response
@@ -462,7 +467,10 @@
 				};
 				messages = [...messages, assistantMessage];
 				await tick();
-				messageInputEl?.focus();
+				messageInputEl?.focus({ preventScroll: true });
+				messageInputEl?.scrollIntoView({ block: 'end', behavior: 'instant' });
+				if (messagesContainerEl && isScrolledToBottom)
+					messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
 				reconcileMessages(threadId);
 			}
 		} catch (err) {
