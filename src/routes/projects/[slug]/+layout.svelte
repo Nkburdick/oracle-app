@@ -36,13 +36,17 @@
 		class="px-6 pb-4 border-b border-border flex-shrink-0"
 		style="padding-top: calc(env(safe-area-inset-top, 0px) + 1rem); margin-top: calc(-1 * env(safe-area-inset-top, 0px));"
 	>
-		<!-- Title row: back arrow + full-width title (no truncation on narrow viewports) -->
-		<div class="flex items-center gap-3">
+		<!-- Title row: back arrow + title. Responsive size to keep the header compact
+		     on mobile viewports; line-clamp-2 so long titles don't push the rest of
+		     the header off-screen. -->
+		<div class="flex items-center gap-3 min-w-0">
 			<a
 				href="/projects"
 				class="md:hidden text-muted-foreground hover:text-foreground flex-shrink-0">←</a
 			>
-			<h1 class="text-[28px] font-bold leading-tight">{fm.title}</h1>
+			<h1 class="text-lg md:text-[28px] font-bold leading-tight line-clamp-2 min-w-0">
+				{fm.title}
+			</h1>
 		</div>
 		<!-- Badge row: right-aligned, stacked below the fixed notification bell -->
 		<div class="flex justify-end mt-1">
