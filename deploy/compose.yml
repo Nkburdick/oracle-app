@@ -40,7 +40,7 @@ services:
       # @vite-pwa/sveltekit — the sveltekit-guard plugin throws "An impossible
       # situation occurred" during client build. Moving headers to Traefik
       # keeps them active and unblocks the build.
-      - "traefik.http.middlewares.oracle-security.headers.contentSecurityPolicy=default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.push.services.mozilla.com https://fcm.googleapis.com https://*.notify.windows.com; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+      - "traefik.http.middlewares.oracle-security.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.push.services.mozilla.com https://fcm.googleapis.com https://*.notify.windows.com; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
       - 'traefik.http.middlewares.oracle-security.headers.frameDeny=true'
       - 'traefik.http.middlewares.oracle-security.headers.contentTypeNosniff=true'
       - 'traefik.http.middlewares.oracle-security.headers.referrerPolicy=strict-origin-when-cross-origin'

@@ -34,7 +34,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { goto, preloadData } from '$app/navigation';
-	import { page } from '$app/stores';
 	import { ChevronDown } from 'lucide-svelte';
 	import type { Thread, Message } from '$lib/types/chat.js';
 	import { renderChatMarkdown } from '$lib/chat-markdown.js';
@@ -50,11 +49,8 @@
 		/** Route prefix for mobile chat navigation — defaults to 'projects'. */
 		routePrefix?: string;
 		/**
-		 * Whether to render the mobile thread list layout (true) or the
-		 * desktop two-panel layout (false). Usually sourced from
-		 * `$page.data.isMobile` which is set server-side from the
-		 * User-Agent header. See the comment on the `isMobile` derived
-		 * below for the rationale (iOS PWA hydration bug).
+		 * Test-only override for the mobile/desktop layout branch. Production
+		 * leaves this undefined and matchMedia drives the decision.
 		 */
 		isMobile?: boolean;
 	};
@@ -144,27 +140,28 @@
 
 	// ─── mobile breakpoint (Phase 2.B.4) ─────────────────────────────────────
 	//
-	// Sourced from `$page.data.isMobile` which is detected server-side via the
-	// User-Agent header in `src/routes/+layout.server.ts`. This replaces the
-	// prior matchMedia + $effect approach which failed on iOS standalone PWA
-	// (see feedback_ios_pwa_hydration.md — Svelte 5 lifecycle hooks do not
-	// reliably fire after hydration in that runtime). UA detection happens
-	// before any render, so the SSR HTML already contains the correct layout
-	// and hydration is a no-op for this decision.
+	// matchMedia at script-init time so the first render on the client already
+	// knows the viewport, then a $effect listener for resize / rotation. SSR
+	// starts `false` (no window); the client re-renders against the correct
+	// value during hydration, which SvelteKit handles transparently once the
+	// Stage 1 PWA fixes (format-detection meta + cache-busted SW) keep
+	// hydration from aborting on iOS standalone.
 	//
-	// Tablet fallback: UA detection is intentionally conservative and only
-	// flips true for phones. A user resizing a desktop browser narrower than
-	// 768px will stay on the desktop two-panel layout — acceptable, since the
-	// primary motivation is the iOS PWA bug, not responsive resizing.
-	//
-	// Precedence: explicit `isMobile` prop (tests + integration use this) wins,
-	// otherwise fall back to `$page.data.isMobile` (the production default,
-	// set in src/routes/+layout.server.ts). $page.data can be undefined in
-	// component-level tests that don't mount the route tree; fall back to
-	// false (desktop layout) in that case to preserve prior test behavior.
-	const isMobile = $derived(
-		props.isMobile !== undefined ? props.isMobile : $page?.data?.isMobile === true
+	// Tests can override via the `isMobile` prop; production leaves it
+	// undefined and matchMedia drives.
+	let isMobileState = $state(
+		typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
 	);
+
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		const mq = window.matchMedia('(max-width: 767px)');
+		const handler = (e: MediaQueryListEvent) => (isMobileState = e.matches);
+		mq.addEventListener('change', handler);
+		return () => mq.removeEventListener('change', handler);
+	});
+
+	const isMobile = $derived(props.isMobile !== undefined ? props.isMobile : isMobileState);
 
 	// Ref for the mobile thread list scroll container
 	let mobileThreadListEl = $state<HTMLElement | null>(null);
@@ -848,7 +845,15 @@
 	<!-- ══════════════════════════════════════════════════════════════════════
      DESKTOP — Two-panel layout (existing, Phase 2.B unchanged)
      ══════════════════════════════════════════════════════════════════════ -->
-	<div class="flex h-full min-h-96" data-testid="project-chats">
+	<!--
+		Desktop two-panel chat.
+		`h-full` inherits from the parent tab-content div (flex-1 overflow-y-auto),
+		so this element fills the available viewport minus the header + tabs.
+		`min-h-0` is required so that internal flex children (messages scroll
+		area + composer) can actually shrink — without it the composer gets
+		pushed below the viewport bottom on shorter screens.
+	-->
+	<div class="flex h-full min-h-0" data-testid="project-chats">
 		<!-- ── Thread rail ─────────────────────────────────────────────────── -->
 		<div class="w-56 border-r border-border flex flex-col p-3 gap-2 flex-shrink-0">
 			<p class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">

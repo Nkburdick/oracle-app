@@ -98,16 +98,25 @@
 }
 
 /* Chat thread full-screen takeover — hide shell chrome, zero all padding.
-   The chat page (h-[100dvh]) manages its own layout including safe areas. */
-.app-shell:has([data-chat-thread]) .app-main {
-	padding: 0 !important;
-	overflow: hidden;
-}
-.app-shell:has([data-chat-thread]) nav[aria-label='Mobile navigation'] {
-	display: none;
-}
-.app-shell:has([data-chat-thread]) .app-bell {
-	display: none;
+   The chat page (h-full) manages its own layout including safe areas.
+   Mobile only: on md+ (desktop) the project chrome stays visible so the
+   two-panel layout still has its header + tab bar. */
+@media (max-width: 767px) {
+	.app-shell:has([data-chat-thread]) .app-main {
+		padding: 0 !important;
+		overflow: hidden;
+	}
+	.app-shell:has([data-chat-thread]) nav[aria-label='Mobile navigation'] {
+		display: none;
+	}
+	.app-shell:has([data-chat-thread]) .app-bell {
+		display: none;
+	}
+	/* Project layout's own header + tabs — hidden when we're in a thread.
+	   The thread page provides its own header. */
+	.app-shell:has([data-chat-thread]) .project-chrome {
+		display: none;
+	}
 }
 
 /* Base styles */
