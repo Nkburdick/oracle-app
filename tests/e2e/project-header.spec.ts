@@ -21,9 +21,7 @@ const TASKS_API = `/api/projects/${SLUG}/tasks`;
 // ---------------------------------------------------------------------------
 
 /** Returns true when the proxy API responds (backend is up). */
-async function checkBackend(
-	req: import('@playwright/test').APIRequestContext
-): Promise<boolean> {
+async function checkBackend(req: import('@playwright/test').APIRequestContext): Promise<boolean> {
 	try {
 		const res = await req.get(TASKS_API);
 		return res.status() !== 503;
@@ -36,10 +34,7 @@ async function checkBackend(
  * Navigate to the project page and skip the test if auth redirects to /login.
  * Returns false if the test was skipped, true if the page loaded.
  */
-async function gotoProject(
-	page: import('@playwright/test').Page,
-	url: string
-): Promise<boolean> {
+async function gotoProject(page: import('@playwright/test').Page, url: string): Promise<boolean> {
 	await page.goto(url);
 	if (page.url().includes('/login')) {
 		test.skip(true, 'Auth is active – no test credentials configured');

@@ -38,12 +38,17 @@
 	>
 		<!-- Title row: back arrow + full-width title (no truncation on narrow viewports) -->
 		<div class="flex items-center gap-3">
-			<a href="/projects" class="md:hidden text-muted-foreground hover:text-foreground flex-shrink-0">←</a>
+			<a
+				href="/projects"
+				class="md:hidden text-muted-foreground hover:text-foreground flex-shrink-0">←</a
+			>
 			<h1 class="text-[28px] font-bold leading-tight">{fm.title}</h1>
 		</div>
 		<!-- Badge row: right-aligned, stacked below the fixed notification bell -->
 		<div class="flex justify-end mt-1">
-			<span class="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold uppercase">
+			<span
+				class="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold uppercase"
+			>
 				{fm.state}
 			</span>
 		</div>
