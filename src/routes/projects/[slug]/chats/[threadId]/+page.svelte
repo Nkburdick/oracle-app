@@ -373,6 +373,13 @@
 	// Auto-grow textarea from 1 to 4 lines (AC-26)
 	function handleTextareaInput(event: Event): void {
 		const el = event.target as HTMLTextAreaElement;
+		// Explicitly mirror the DOM value into the `draft` rune. `bind:value`
+		// already does this on desktop / Android, but in the iOS standalone
+		// PWA the bind doesn't reliably propagate — see
+		// feedback_ios_pwa_hydration.md. Without this line the user can type
+		// into the composer but `draft` stays "", leaving the send button
+		// stuck in its disabled state and making it look unresponsive.
+		draft = el.value;
 		el.style.height = 'auto';
 		// 4 lines × ~24px line-height + 16px vertical padding
 		const maxHeight = 4 * 24 + 16;
