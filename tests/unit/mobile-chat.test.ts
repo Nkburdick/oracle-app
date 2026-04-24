@@ -76,7 +76,8 @@ describe('Mobile thread list (ProjectChats in mobile mode)', () => {
 				slug: 'oracle-app',
 				initialThreads: [SAMPLE_PERSISTENT, SAMPLE_EPHEMERAL],
 				initialMessages: [],
-				loaderError: null
+				loaderError: null,
+				isMobile: true
 			}
 		});
 
@@ -93,7 +94,8 @@ describe('Mobile thread list (ProjectChats in mobile mode)', () => {
 				slug: 'oracle-app',
 				initialThreads: [],
 				initialMessages: [],
-				loaderError: null
+				loaderError: null,
+				isMobile: true
 			}
 		});
 
@@ -111,7 +113,8 @@ describe('Mobile thread list (ProjectChats in mobile mode)', () => {
 				slug: 'oracle-app',
 				initialThreads: [SAMPLE_PERSISTENT, SAMPLE_EPHEMERAL],
 				initialMessages: [],
-				loaderError: null
+				loaderError: null,
+				isMobile: true
 			}
 		});
 
@@ -128,7 +131,8 @@ describe('Mobile thread list (ProjectChats in mobile mode)', () => {
 				slug: 'oracle-app',
 				initialThreads: [SAMPLE_PERSISTENT],
 				initialMessages: [],
-				loaderError: null
+				loaderError: null,
+				isMobile: true
 			}
 		});
 
@@ -142,7 +146,8 @@ describe('Mobile thread list (ProjectChats in mobile mode)', () => {
 				slug: 'oracle-app',
 				initialThreads: [SAMPLE_PERSISTENT],
 				initialMessages: [],
-				loaderError: null
+				loaderError: null,
+				isMobile: true
 			}
 		});
 
