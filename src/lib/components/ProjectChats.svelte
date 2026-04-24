@@ -34,7 +34,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { goto, preloadData } from '$app/navigation';
-	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
 	import { ChevronDown } from 'lucide-svelte';
 	import type { Thread, Message } from '$lib/types/chat.js';
 	import { renderChatMarkdown } from '$lib/chat-markdown.js';
@@ -49,6 +49,14 @@
 		apiBasePath?: string;
 		/** Route prefix for mobile chat navigation — defaults to 'projects'. */
 		routePrefix?: string;
+		/**
+		 * Whether to render the mobile thread list layout (true) or the
+		 * desktop two-panel layout (false). Usually sourced from
+		 * `$page.data.isMobile` which is set server-side from the
+		 * User-Agent header. See the comment on the `isMobile` derived
+		 * below for the rationale (iOS PWA hydration bug).
+		 */
+		isMobile?: boolean;
 	};
 
 	const props: Props = $props();
@@ -136,23 +144,27 @@
 
 	// ─── mobile breakpoint (Phase 2.B.4) ─────────────────────────────────────
 	//
-	// Starts false on server and updates after hydration. The parent route wraps
-	// this component in {#key fm.slug}, so isMobile re-evaluates on every
-	// project mount. matchMedia is cheaper than `hidden md:block` because it
-	// controls which component tree is mounted, not just CSS visibility.
-
-	let isMobile = $state(false);
-
-	$effect(() => {
-		if (!browser) return;
-		const mq = window.matchMedia('(max-width: 767px)');
-		isMobile = mq.matches;
-		const handler = (e: MediaQueryListEvent) => {
-			isMobile = e.matches;
-		};
-		mq.addEventListener('change', handler);
-		return () => mq.removeEventListener('change', handler);
-	});
+	// Sourced from `$page.data.isMobile` which is detected server-side via the
+	// User-Agent header in `src/routes/+layout.server.ts`. This replaces the
+	// prior matchMedia + $effect approach which failed on iOS standalone PWA
+	// (see feedback_ios_pwa_hydration.md — Svelte 5 lifecycle hooks do not
+	// reliably fire after hydration in that runtime). UA detection happens
+	// before any render, so the SSR HTML already contains the correct layout
+	// and hydration is a no-op for this decision.
+	//
+	// Tablet fallback: UA detection is intentionally conservative and only
+	// flips true for phones. A user resizing a desktop browser narrower than
+	// 768px will stay on the desktop two-panel layout — acceptable, since the
+	// primary motivation is the iOS PWA bug, not responsive resizing.
+	//
+	// Precedence: explicit `isMobile` prop (tests + integration use this) wins,
+	// otherwise fall back to `$page.data.isMobile` (the production default,
+	// set in src/routes/+layout.server.ts). $page.data can be undefined in
+	// component-level tests that don't mount the route tree; fall back to
+	// false (desktop layout) in that case to preserve prior test behavior.
+	const isMobile = $derived(
+		props.isMobile !== undefined ? props.isMobile : $page?.data?.isMobile === true
+	);
 
 	// Ref for the mobile thread list scroll container
 	let mobileThreadListEl = $state<HTMLElement | null>(null);
