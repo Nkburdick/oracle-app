@@ -15,7 +15,12 @@ export default defineConfig({
 		SvelteKitPWA({
 			srcDir: 'src',
 			strategies: 'injectManifest',
-			registerType: 'prompt',
+			// `autoUpdate` silently replaces the SW as soon as a new version
+			// is detected, vs `prompt` which requires a user tap. iOS
+			// standalone PWAs can't easily surface that prompt (no reliable
+			// beforeinstallprompt-equivalent) and can get stuck on a broken
+			// old SW indefinitely — see github.com/sveltejs/svelte/issues/12313.
+			registerType: 'autoUpdate',
 			injectManifest: {
 				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}']
 			},

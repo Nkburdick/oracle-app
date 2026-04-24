@@ -3,6 +3,15 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<!--
+			Disable Safari's automatic phone-number / email / address / date
+			detection. When enabled (default), Safari rewrites the DOM BEFORE
+			Svelte hydration runs — which breaks hydration parity, causes
+			SvelteKit to fall back to a client-only re-render, and makes
+			lifecycle hooks (onMount / $effect) look flaky. See
+			github.com/sveltejs/svelte/issues/17357.
+		-->
+		<meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
 		<meta name="theme-color" content="#0D0F11" />
 		<meta name="description" content="Personal operations system powered by Alfred" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
