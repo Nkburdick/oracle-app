@@ -33,7 +33,19 @@ services:
       # Auth is now handled by the app (cookie session) instead of Traefik.
       # Basic auth removed — it doesn't re-prompt in iOS standalone PWA mode,
       # causing blank white screen on session expiry (Loom issue 1).
-      # App-level auth: hooks.server.ts checks cookie, redirects to /login.
+      # App-level auth: +layout.server.ts checks cookie, redirects to /login.
+      #
+      # Security headers. Previously set in src/hooks.server.ts, but having a
+      # `handle` export in hooks.server.ts is incompatible with Vite 7 +
+      # @vite-pwa/sveltekit — the sveltekit-guard plugin throws "An impossible
+      # situation occurred" during client build. Moving headers to Traefik
+      # keeps them active and unblocks the build.
+      - "traefik.http.middlewares.oracle-security.headers.contentSecurityPolicy=default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.push.services.mozilla.com https://fcm.googleapis.com https://*.notify.windows.com; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+      - 'traefik.http.middlewares.oracle-security.headers.frameDeny=true'
+      - 'traefik.http.middlewares.oracle-security.headers.contentTypeNosniff=true'
+      - 'traefik.http.middlewares.oracle-security.headers.referrerPolicy=strict-origin-when-cross-origin'
+      - 'traefik.http.middlewares.oracle-security.headers.permissionsPolicy=camera=(), microphone=(), geolocation=()'
+      - 'traefik.http.routers.oracle.middlewares=oracle-security'
     healthcheck:
       # Use 127.0.0.1 not localhost — Alpine resolves localhost to ::1 (IPv6),
       # but the SvelteKit Node adapter only binds IPv4 (0.0.0.0). busybox wget
