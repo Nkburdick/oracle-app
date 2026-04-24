@@ -275,12 +275,16 @@
 
 	// ─── mobile navigation (Phase 2.B.4) ────────────────────────────────────
 
-	/** Navigate to a thread on mobile, saving scroll position first. */
-	function navigateToThread(threadId: string): void {
+	/**
+	 * Save the thread list scroll position before navigating away on mobile.
+	 * Mobile rows use a native <a href> so we don't call goto() here — the
+	 * browser (or SvelteKit's enhanced nav, when it's hydrated correctly)
+	 * handles the navigation itself. Called from the anchor's onclick.
+	 */
+	function saveScrollPositionBeforeNav(): void {
 		if (mobileThreadListEl) {
 			threadListScrollPositions.set(slug, mobileThreadListEl.scrollTop);
 		}
-		void goto(`/${routePrefix}/${slug}/chats/${threadId}`);
 	}
 
 	/** Preload thread data on pointer enter for faster navigation (AC-35). */
@@ -311,7 +315,16 @@
 				return (await res.json()) as { conversation: Thread };
 			});
 
-			void goto(`/${routePrefix}/${slug}/chats/${data.conversation.id}`);
+			// Prefer SvelteKit client nav, but fall back to a full document
+			// navigation if goto() is not available or silently no-ops
+			// (iOS standalone PWA hydration can leave the router stalled —
+			// see feedback_ios_pwa_hydration.md).
+			const targetUrl = `/${routePrefix}/${slug}/chats/${data.conversation.id}`;
+			try {
+				await goto(targetUrl);
+			} catch {
+				window.location.assign(targetUrl);
+			}
 		} catch (err) {
 			threadsError = (err as Error).message;
 		}
@@ -786,15 +799,25 @@
 			>
 				{#each threads as thread (thread.id)}
 					<li class="group relative">
-						<button
-							type="button"
-							onclick={() => navigateToThread(thread.id)}
+						<!--
+							Native <a href> with data-sveltekit-reload: force a full-document
+							navigation rather than SvelteKit's client-side router. goto() and
+							the SvelteKit client router rely on the same Svelte 5 lifecycle
+							that fails on iOS standalone PWA (see feedback_ios_pwa_hydration.md),
+							leaving taps silently no-op'ing with the user on the same page.
+							data-sveltekit-reload guarantees a browser-native nav, so the
+							destination route gets a fresh SSR render and hydration pass.
+						-->
+						<a
+							href={`/${routePrefix}/${slug}/chats/${thread.id}`}
+							data-sveltekit-reload
+							onclick={() => saveScrollPositionBeforeNav()}
 							onpointerenter={() => preloadThread(thread.id)}
 							onpointerdown={(e) => startLongPress(thread, e)}
 							onpointerup={clearLongPress}
 							onpointercancel={clearLongPress}
 							onpointermove={clearLongPress}
-							class="w-full flex items-center gap-3 px-4 py-3 min-h-[48px] text-left transition-colors hover:bg-accent/50 active:bg-accent"
+							class="w-full flex items-center gap-3 px-4 py-3 min-h-[48px] text-left transition-colors hover:bg-accent/50 active:bg-accent no-underline text-foreground"
 							data-testid="thread-row"
 							data-thread-id={thread.id}
 						>
@@ -815,7 +838,7 @@
 							<!-- Drill-in chevron -->
 							<span class="text-muted-foreground text-base flex-shrink-0" aria-hidden="true">›</span
 							>
-						</button>
+						</a>
 					</li>
 				{/each}
 			</ul>
