@@ -2,6 +2,7 @@
 	import type { PageData } from './$types.js';
 	import { page } from '$app/stores';
 	import { invalidate } from '$app/navigation';
+	import { ExternalLink } from 'lucide-svelte';
 	import ProjectChats from '$lib/components/ProjectChats.svelte';
 	import PullToRefresh from '$lib/components/PullToRefresh.svelte';
 
@@ -45,6 +46,16 @@
 	     duplicate page title (the layout header already shows fm.title). -->
 	<PullToRefresh onrefresh={refreshProject}>
 		<div class="p-6" data-testid="sow-content">
+			<div class="flex justify-end mb-4">
+				<a
+					href={project.githubEditUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+				>
+					Edit in GitHub <ExternalLink size={12} />
+				</a>
+			</div>
 			<article class="prose [&>h1:first-child]:hidden">
 				{@html project.bodyHtml}
 			</article>

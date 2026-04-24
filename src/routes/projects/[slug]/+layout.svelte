@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { ExternalLink } from 'lucide-svelte';
 	import type { LayoutData } from './$types.js';
 
 	interface Props {
@@ -32,27 +31,27 @@
 </script>
 
 <div class="flex flex-col h-full">
-	<!-- Page header -->
+	<!-- Page header — extends background into safe-area notch band; cancels main's pt-safe-area to avoid double-padding -->
 	<header
-		class="px-6 py-4 border-b border-border flex items-start justify-between gap-4 flex-shrink-0"
+		class="px-6 pb-4 border-b border-border flex-shrink-0"
+		style="padding-top: calc(env(safe-area-inset-top, 0px) + 1rem); margin-top: calc(-1 * env(safe-area-inset-top, 0px));"
 	>
-		<div class="flex items-center gap-3 min-w-0">
-			<a href="/projects" class="md:hidden text-muted-foreground hover:text-foreground mr-1">←</a>
-			<h1 class="text-[28px] font-bold truncate">{fm.title}</h1>
+		<!-- Title row: back arrow + full-width title (no truncation on narrow viewports) -->
+		<div class="flex items-center gap-3">
+			<a
+				href="/projects"
+				class="md:hidden text-muted-foreground hover:text-foreground flex-shrink-0">←</a
+			>
+			<h1 class="text-[28px] font-bold leading-tight">{fm.title}</h1>
+		</div>
+		<!-- Badge row: right-aligned, stacked below the fixed notification bell -->
+		<div class="flex justify-end mt-1">
 			<span
-				class="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold uppercase flex-shrink-0"
+				class="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold uppercase"
 			>
 				{fm.state}
 			</span>
 		</div>
-		<a
-			href={project.githubEditUrl}
-			target="_blank"
-			rel="noopener noreferrer"
-			class="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground flex-shrink-0 mt-1"
-		>
-			Edit in GitHub <ExternalLink size={12} />
-		</a>
 	</header>
 
 	<!-- Tab bar -->
