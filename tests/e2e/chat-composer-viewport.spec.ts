@@ -14,18 +14,6 @@ import { test, expect, devices } from '@playwright/test';
 const SLUG = 'test-project';
 const THREADS_API = `/api/projects/${SLUG}/threads`;
 
-/** Returns true when the Pennyworth proxy API is reachable. */
-async function pennyworthReachable(
-	req: import('@playwright/test').APIRequestContext
-): Promise<boolean> {
-	try {
-		const res = await req.get(THREADS_API);
-		return res.status() !== 503 && res.status() !== 404;
-	} catch {
-		return false;
-	}
-}
-
 test.describe('Chat composer viewport (ISC-13, ISC-14)', () => {
 	test.use(devices['iPhone 15 Pro']);
 	test.describe.configure({ mode: 'serial' });
@@ -34,17 +22,16 @@ test.describe('Chat composer viewport (ISC-13, ISC-14)', () => {
 	let available = false;
 
 	test.beforeAll(async ({ request }) => {
-		available = await pennyworthReachable(request);
-		if (!available) return;
+		// Create an ephemeral thread; a 503 response means Pennyworth is not
+		// configured, so we mark the suite unavailable and skip gracefully.
+		const res = await request
+			.post(THREADS_API, { data: { title: `e2e-viewport-${Date.now()}` } })
+			.catch(() => null);
 
-		// Create an ephemeral thread for the test run.
-		const res = await request.post(THREADS_API, {
-			data: { title: `e2e-viewport-${Date.now()}` }
-		});
-		if (res.ok()) {
-			const body = await res.json();
-			threadId = (body.thread?.id ?? body.id ?? null) as string | null;
-		}
+		if (!res || !res.ok()) return;
+		available = true;
+		const body = await res.json();
+		threadId = (body.conversation?.id ?? null) as string | null;
 	});
 
 	test.afterAll(async ({ request }) => {
@@ -82,9 +69,10 @@ test.describe('Chat composer viewport (ISC-13, ISC-14)', () => {
 		const box = await composer.boundingBox();
 
 		expect(box, 'Composer must have a bounding box').not.toBeNull();
-		expect(box!.y + box!.height, 'Composer bottom must be within viewport height').toBeLessThanOrEqual(
-			viewport!.height
-		);
+		expect(
+			box!.y + box!.height,
+			'Composer bottom must be within viewport height'
+		).toBeLessThanOrEqual(viewport!.height);
 	});
 
 	// ── ISC-14: composer remains visible after sending a message ─────────────

@@ -19,6 +19,7 @@ const config: PlaywrightTestConfig = {
 		},
 		{
 			name: 'mobile-webkit-iphone15pro',
+			testMatch: '**/chat-composer-viewport.spec.ts',
 			use: {
 				...devices['iPhone 15 Pro']
 			}

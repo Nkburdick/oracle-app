@@ -285,7 +285,8 @@
 			await tick();
 			textareaEl?.focus({ preventScroll: true });
 			textareaEl?.scrollIntoView({ block: 'end', behavior: 'instant' });
-			if (messagesContainerEl) messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
+			if (messagesContainerEl && isScrolledToBottom)
+				messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
 			reconcileMessages(threadId);
 
 			// Show push prompt after first successful chat response
@@ -336,7 +337,8 @@
 			await tick();
 			textareaEl?.focus({ preventScroll: true });
 			textareaEl?.scrollIntoView({ block: 'end', behavior: 'instant' });
-			if (messagesContainerEl) messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
+			if (messagesContainerEl && isScrolledToBottom)
+				messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
 			reconcileMessages(threadId);
 		} catch (err) {
 			messages = messages.filter((m) => m.id !== optimisticId);
