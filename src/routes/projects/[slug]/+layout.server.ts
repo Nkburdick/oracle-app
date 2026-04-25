@@ -1,9 +1,5 @@
 import type { LayoutServerLoad } from './$types.js';
-import {
-	readProject,
-	readProjectStatus,
-	readProjectDecisions
-} from '$lib/server/oracle-reader.js';
+import { readProject, readProjectStatus, readProjectDecisions } from '$lib/server/oracle-reader.js';
 import { error } from '@sveltejs/kit';
 
 export const load: LayoutServerLoad = async ({ params, depends }) => {

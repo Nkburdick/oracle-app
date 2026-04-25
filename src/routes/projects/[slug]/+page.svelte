@@ -103,8 +103,8 @@
 						This project hasn't adopted the 4-tier doc framework.
 					</p>
 					<p class="text-xs text-muted-foreground mb-6 leading-relaxed">
-						<code class="text-foreground">STATUS.md</code> is the live state doc — Right Now,
-						Next 3 Actions, Active Sessions, Blocked, Findings, Log. Updated every session.
+						<code class="text-foreground">STATUS.md</code> is the live state doc — Right Now, Next 3 Actions,
+						Active Sessions, Blocked, Findings, Log. Updated every session.
 					</p>
 					<a
 						href={createStatusUrl}
@@ -147,8 +147,8 @@
 						This project hasn't adopted the 4-tier doc framework.
 					</p>
 					<p class="text-xs text-muted-foreground mb-6 leading-relaxed">
-						<code class="text-foreground">DECISIONS.md</code> is append-only project memory —
-						each entry is Decision / Rationale / What changed.
+						<code class="text-foreground">DECISIONS.md</code> is append-only project memory — each entry
+						is Decision / Rationale / What changed.
 					</p>
 					<a
 						href={createDecisionsUrl}

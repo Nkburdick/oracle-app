@@ -31,13 +31,7 @@ import {
 	renderMarkdown,
 	sortByOrder
 } from './markdown.js';
-import type {
-	Project,
-	ProjectDoc,
-	Area,
-	SidebarItem,
-	DashboardCard
-} from '$lib/types/oracle.js';
+import type { Project, ProjectDoc, Area, SidebarItem, DashboardCard } from '$lib/types/oracle.js';
 import type { Task, TasksFile } from '$lib/types/oracle-task.js';
 
 const VALID_STATUSES = new Set(['backlog', 'ready', 'in_progress', 'review', 'done']);
