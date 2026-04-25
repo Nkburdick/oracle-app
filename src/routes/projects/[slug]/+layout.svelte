@@ -12,21 +12,31 @@
 	const project = $derived(data.project);
 	const fm = $derived(project.frontmatter);
 
+	// Tab is driven by the `?view=` search param (or /tasks sub-route). New views
+	// (status, decisions) added 2026-04-25 alongside the 4-tier doc framework.
 	const activeTab = $derived(
 		$page.url.pathname.endsWith('/tasks')
 			? 'tasks'
-			: $page.url.searchParams.get('view') === 'artifacts'
-				? 'artifacts'
-				: $page.url.searchParams.get('view') === 'sow'
-					? 'sow'
-					: 'chats'
+			: ((): string => {
+					const view = $page.url.searchParams.get('view');
+					if (view === 'status') return 'status';
+					if (view === 'decisions') return 'decisions';
+					if (view === 'sow') return 'sow';
+					if (view === 'artifacts') return 'artifacts';
+					return 'chats';
+				})()
 	);
 
+	// Tab order: Chats (default) → Status (read-first per 4-tier framework) → SOW
+	// (slim plan) → Decisions (history) → Tasks → Artifacts. Status + Decisions
+	// always render — empty state explains the framework when files don't exist.
 	const tabs = $derived([
 		{ id: 'chats', label: 'Chats', href: `/projects/${fm.slug}` },
-		{ id: 'artifacts', label: 'Artifacts', href: `/projects/${fm.slug}?view=artifacts` },
+		{ id: 'status', label: 'Status', href: `/projects/${fm.slug}?view=status` },
 		{ id: 'sow', label: 'SOW', href: `/projects/${fm.slug}?view=sow` },
-		{ id: 'tasks', label: 'Tasks', href: `/projects/${fm.slug}/tasks` }
+		{ id: 'decisions', label: 'Decisions', href: `/projects/${fm.slug}?view=decisions` },
+		{ id: 'tasks', label: 'Tasks', href: `/projects/${fm.slug}/tasks` },
+		{ id: 'artifacts', label: 'Artifacts', href: `/projects/${fm.slug}?view=artifacts` }
 	]);
 </script>
 
@@ -66,16 +76,23 @@
 		</div>
 	</header>
 
-	<!-- Tab bar -->
+	<!--
+		Tab bar. 6 tabs overflow the mobile viewport (~327px usable after px-6
+		padding) so the row scrolls horizontally on small screens. Active tab
+		auto-scrolls into view via `scroll-margin-inline`. iOS gets momentum
+		scroll for free.
+	-->
 	<nav
-		class="project-chrome flex border-b border-border px-6 flex-shrink-0"
+		class="project-chrome flex border-b border-border px-6 flex-shrink-0 overflow-x-auto scrollbar-none"
+		style="scroll-padding-inline: 1.5rem;"
 		aria-label="Project sections"
 	>
 		{#each tabs as tab (tab.id)}
 			<a
 				href={tab.href}
-				class="px-4 py-2.5 text-sm transition-colors relative
+				class="px-4 py-2.5 text-sm transition-colors relative whitespace-nowrap flex-shrink-0
 					{activeTab === tab.id ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}"
+				style="scroll-margin-inline: 1.5rem;"
 				aria-current={activeTab === tab.id ? 'page' : undefined}
 			>
 				{tab.label}
