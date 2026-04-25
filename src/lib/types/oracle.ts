@@ -57,6 +57,17 @@ export interface Project {
 	githubEditUrl: string;
 }
 
+/**
+ * Generic project doc — used for sibling files like STATUS.md and DECISIONS.md.
+ * Slimmer than Project: no frontmatter, no DoD parsing — just the rendered body.
+ */
+export interface ProjectDoc {
+	bodyMarkdown: string;
+	bodyHtml: string;
+	filePath: string;
+	githubEditUrl: string;
+}
+
 /** Same for areas */
 export interface Area {
 	frontmatter: AreaFrontmatter;

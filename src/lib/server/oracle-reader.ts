@@ -31,7 +31,13 @@ import {
 	renderMarkdown,
 	sortByOrder
 } from './markdown.js';
-import type { Project, Area, SidebarItem, DashboardCard } from '$lib/types/oracle.js';
+import type {
+	Project,
+	ProjectDoc,
+	Area,
+	SidebarItem,
+	DashboardCard
+} from '$lib/types/oracle.js';
 import type { Task, TasksFile } from '$lib/types/oracle-task.js';
 
 const VALID_STATUSES = new Set(['backlog', 'ready', 'in_progress', 'review', 'done']);
@@ -123,6 +129,44 @@ export async function readProject(slug: string): Promise<Project | null> {
 	} catch {
 		return null;
 	}
+}
+
+/**
+ * Read a sibling project doc file (STATUS.md / DECISIONS.md) from disk.
+ *
+ * Returns null when the file doesn't exist — most projects haven't adopted
+ * the 4-tier doc framework yet, so absence is the common case and not an error.
+ *
+ * Mirrors the security checks from readProject() so URL slugs can't traverse
+ * out of the Projects directory.
+ */
+async function readProjectDoc(slug: string, filename: string): Promise<ProjectDoc | null> {
+	if (!isSafeSlug(slug)) return null;
+	const projectsDir = getProjectsDir();
+	const filePath = join(projectsDir, slug, filename);
+	if (!isPathInside(filePath, projectsDir)) return null;
+	try {
+		const raw = await readFile(filePath, 'utf-8');
+		const bodyHtml = await renderMarkdown(raw);
+		return {
+			bodyMarkdown: raw,
+			bodyHtml,
+			filePath,
+			githubEditUrl: githubEditUrl('Projects', slug, filename)
+		};
+	} catch {
+		return null;
+	}
+}
+
+/** Read STATUS.md for a project. Returns null when the file doesn't exist. */
+export async function readProjectStatus(slug: string): Promise<ProjectDoc | null> {
+	return readProjectDoc(slug, 'STATUS.md');
+}
+
+/** Read DECISIONS.md for a project. Returns null when the file doesn't exist. */
+export async function readProjectDecisions(slug: string): Promise<ProjectDoc | null> {
+	return readProjectDoc(slug, 'DECISIONS.md');
 }
 
 /** Parse a single area from disk */
