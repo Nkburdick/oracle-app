@@ -28,3 +28,72 @@ jobs:
           tags: |
             ghcr.io/nkburdick/oracle-app:latest
             ghcr.io/nkburdick/oracle-app:${{ github.sha }}
+
+  deploy-to-kvm2:
+    needs: build-push
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Pull + recreate oracle on KVM2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.KVM2_HOST }}
+          username: root
+          key: ${{ secrets.KVM2_ROOT_SSH_KEY }}
+          timeout: 60s
+          command_timeout: 8m
+          script: |
+            set -e
+            cd /opt/oracle-stack
+            docker compose pull oracle
+            docker compose up -d --force-recreate oracle
+
+            # Poll healthcheck until container settles (compose.yml: start_period=10s, interval=30s)
+            for _ in $(seq 1 60); do
+              H=$(docker inspect oracle --format '{{.State.Health.Status}}' 2>/dev/null || echo missing)
+              [ "$H" = "healthy" ] && break
+              [ "$H" = "missing" ] && { echo "ERROR: oracle container not found"; exit 1; }
+              sleep 2
+            done
+
+            read STATUS IMAGE_ID CREATED HEALTH < <(docker inspect oracle \
+              --format '{{.State.Status}} {{slice .Image 7 19}} {{.Created}} {{.State.Health.Status}}')
+
+            if [ "$STATUS" = "running" ] && [ "$HEALTH" = "healthy" ]; then
+              echo "oracle deployed: image=$IMAGE_ID created=$CREATED status=$STATUS health=$HEALTH"
+            else
+              echo "ERROR: oracle deploy failed: status=$STATUS health=$HEALTH image=$IMAGE_ID"
+              exit 1
+            fi
+
+      - name: Retry on failure
+        if: failure()
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.KVM2_HOST }}
+          username: root
+          key: ${{ secrets.KVM2_ROOT_SSH_KEY }}
+          timeout: 90s
+          command_timeout: 8m
+          script: |
+            set -e
+            cd /opt/oracle-stack
+            docker compose pull oracle
+            docker compose up -d --force-recreate oracle
+
+            for _ in $(seq 1 60); do
+              H=$(docker inspect oracle --format '{{.State.Health.Status}}' 2>/dev/null || echo missing)
+              [ "$H" = "healthy" ] && break
+              [ "$H" = "missing" ] && { echo "ERROR (retry): oracle container not found"; exit 1; }
+              sleep 2
+            done
+
+            read STATUS IMAGE_ID CREATED HEALTH < <(docker inspect oracle \
+              --format '{{.State.Status}} {{slice .Image 7 19}} {{.Created}} {{.State.Health.Status}}')
+
+            if [ "$STATUS" = "running" ] && [ "$HEALTH" = "healthy" ]; then
+              echo "oracle deployed (retry): image=$IMAGE_ID created=$CREATED status=$STATUS health=$HEALTH"
+            else
+              echo "ERROR (retry): oracle deploy failed: status=$STATUS health=$HEALTH image=$IMAGE_ID"
+              exit 1
+            fi
