@@ -287,14 +287,14 @@
 			}}
 		>
 			<p
-				class="text-sm leading-snug {optimisticStatus === 'done'
+				class="text-sm font-semibold leading-snug {optimisticStatus === 'done'
 					? 'text-muted-foreground line-through'
 					: ''}"
 			>
 				{task.content}
 			</p>
 			{#if task.description}
-				<p class="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{task.description}</p>
+				<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{task.description}</p>
 			{/if}
 			{#if task.phase}
 				<span

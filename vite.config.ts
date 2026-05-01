@@ -51,7 +51,8 @@ export default defineConfig({
 	server: {
 		fs: {
 			allow: ['..']
-		}
+		},
+		allowedHosts: ['.trycloudflare.com', 'localhost', '127.0.0.1']
 	},
 	resolve: {
 		// Under Vitest, force the browser resolve condition so Svelte 5's

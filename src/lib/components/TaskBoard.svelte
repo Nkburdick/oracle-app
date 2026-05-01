@@ -65,13 +65,21 @@
 		return name ?? '__unsectioned__';
 	}
 
-	function toggleSection(name: string | null) {
+	function isCollapsed(name: string | null, sectionTasks: Task[]): boolean {
 		const key = collapseKey(name);
-		collapsed[key] = !collapsed[key];
+		// User-toggled state always wins.
+		if (key in collapsed) return collapsed[key];
+		// Default: collapse the section when every task is done — keeps "live"
+		// sections (anything still pending) visible by default and tucks away
+		// fully-completed phases automatically.
+		if (sectionTasks.length === 0) return false;
+		return sectionTasks.every((t) => t.status === 'done');
 	}
 
-	function isCollapsed(name: string | null): boolean {
-		return collapsed[collapseKey(name)] ?? false;
+	function toggleSection(name: string | null, sectionTasks: Task[]) {
+		const key = collapseKey(name);
+		// Invert the *currently visible* state (whether explicit or default).
+		collapsed[key] = !isCollapsed(name, sectionTasks);
 	}
 
 	// ── Optimistic patch from TaskRow ──────────────────────────────────────────
@@ -166,13 +174,13 @@
 					<button
 						type="button"
 						class="group mb-2 flex w-full items-center gap-2 text-left"
-						onclick={() => toggleSection(section.name)}
-						aria-expanded={!isCollapsed(section.name)}
+						onclick={() => toggleSection(section.name, section.tasks)}
+						aria-expanded={!isCollapsed(section.name, section.tasks)}
 					>
 						<ChevronDown
 							size={14}
 							class="flex-shrink-0 text-muted-foreground transition-transform
-								{isCollapsed(section.name) ? '-rotate-90' : ''}"
+								{isCollapsed(section.name, section.tasks) ? '-rotate-90' : ''}"
 						/>
 						<span
 							class="text-xs font-semibold uppercase tracking-wide text-muted-foreground transition-colors group-hover:text-foreground"
@@ -183,7 +191,7 @@
 					</button>
 
 					<!-- Task rows with per-section DnD (no cross-section dragging) -->
-					{#if !isCollapsed(section.name)}
+					{#if !isCollapsed(section.name, section.tasks)}
 						<ul
 							class="flex flex-col divide-y divide-border overflow-hidden rounded-lg border border-border"
 							use:dragHandleZone={{

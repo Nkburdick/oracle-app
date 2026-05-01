@@ -17,7 +17,7 @@
 	--secondary: oklch(0.536 0.0398 196.028); /* teal #527575 */
 	--secondary-foreground: oklch(1 0 0);
 	--muted: oklch(0.967 0.0029 264.5419);
-	--muted-foreground: oklch(0.551 0.0234 264.3637);
+	--muted-foreground: oklch(0.44 0.0234 264.3637);
 	--accent: oklch(0.9491 0 0);
 	--accent-foreground: oklch(0.2101 0.0318 264.6645);
 	--destructive: oklch(0.6368 0.2078 25.3313);
@@ -41,7 +41,7 @@
 	--secondary: oklch(0.594 0.0443 196.0233); /* teal (lighter for dark mode) */
 	--secondary-foreground: oklch(0.9851 0 0);
 	--muted: oklch(0.252 0 0);
-	--muted-foreground: oklch(0.683 0 0);
+	--muted-foreground: oklch(0.78 0 0);
 	--accent: oklch(0.252 0 0);
 	--accent-foreground: oklch(0.8109 0 0);
 	--destructive: oklch(0.6368 0.2078 25.3313);
@@ -72,6 +72,8 @@
 	--color-input: var(--input);
 	--color-ring: var(--ring);
 
+	--font-sans:
+		-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, system-ui, sans-serif;
 	--font-mono:
 		'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
 		'Courier New', monospace;
@@ -128,8 +130,8 @@
 
 html,
 body {
-	font-family: var(--font-mono);
-	font-size: 14px;
+	font-family: var(--font-sans);
+	font-size: 15px;
 	letter-spacing: 0em;
 	background-color: var(--background);
 	color: var(--foreground);
