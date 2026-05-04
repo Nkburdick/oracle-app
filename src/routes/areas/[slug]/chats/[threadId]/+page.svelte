@@ -270,6 +270,18 @@
 						messages = messages.map((m) =>
 							m.id === assistantId ? { ...m, content: fullText } : m
 						);
+						// Keep viewport pinned during streaming if user is at the bottom;
+						// surface the new-messages pill if they've scrolled up. The append-path
+						// $effect doesn't fire here — messages.length is unchanged across tokens.
+						if (isScrolledToBottom) {
+							tick().then(() => {
+								if (messagesContainerEl && isScrolledToBottom) {
+									messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
+								}
+							});
+						} else {
+							hasNewMessages = true;
+						}
 					} else if (eventType === 'done') {
 						fullText = data.fullText;
 						messages = messages.map((m) =>
