@@ -20,22 +20,34 @@
 
 	// ── Status helpers ────────────────────────────────────────────────────────
 
-	const STATUS_ORDER: TaskStatus[] = ['backlog', 'ready', 'in_progress', 'review', 'done'];
+	const STATUS_ORDER: TaskStatus[] = [
+		'backlog',
+		'ready',
+		'in_progress',
+		'pr-open',
+		'review',
+		'done',
+		'deferred'
+	];
 
 	const STATUS_LABELS: Record<TaskStatus, string> = {
 		backlog: 'Backlog',
 		ready: 'Ready',
 		in_progress: 'In progress',
+		'pr-open': 'PR open',
 		review: 'Review',
-		done: 'Done'
+		done: 'Done',
+		deferred: 'Deferred'
 	};
 
 	const STATUS_COLORS: Record<TaskStatus, string> = {
 		backlog: 'bg-muted text-muted-foreground',
 		ready: 'bg-secondary/20 text-secondary',
 		in_progress: 'bg-primary/15 text-primary',
+		'pr-open': 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
 		review: 'bg-accent text-accent-foreground border border-border',
-		done: 'bg-muted text-muted-foreground'
+		done: 'bg-muted text-muted-foreground',
+		deferred: 'bg-muted/50 text-muted-foreground italic'
 	};
 
 	// ── Assignee helpers ──────────────────────────────────────────────────────

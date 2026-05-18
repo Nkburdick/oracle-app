@@ -8,7 +8,14 @@
  * Verbatim mirror of Pennyworth `src/types/oracle-task.ts`.
  */
 
-export type TaskStatus = 'backlog' | 'ready' | 'in_progress' | 'review' | 'done';
+export type TaskStatus =
+	| 'backlog'
+	| 'ready'
+	| 'in_progress'
+	| 'pr-open'
+	| 'review'
+	| 'done'
+	| 'deferred';
 
 export type TaskAssignee = 'nick' | 'alfred' | 'pennyworth' | 'forge';
 

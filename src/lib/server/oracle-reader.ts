@@ -34,7 +34,15 @@ import {
 import type { Project, ProjectDoc, Area, SidebarItem, DashboardCard } from '$lib/types/oracle.js';
 import type { Task, TasksFile } from '$lib/types/oracle-task.js';
 
-const VALID_STATUSES = new Set(['backlog', 'ready', 'in_progress', 'review', 'done']);
+const VALID_STATUSES = new Set([
+	'backlog',
+	'ready',
+	'in_progress',
+	'pr-open',
+	'review',
+	'done',
+	'deferred'
+]);
 const VALID_ASSIGNEES = new Set(['nick', 'alfred', 'pennyworth', 'forge']);
 
 function isValidTask(t: unknown): t is Task {
