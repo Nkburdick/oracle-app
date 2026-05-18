@@ -2,14 +2,24 @@
 	import { X, GitBranch, ExternalLink, AlertCircle } from 'lucide-svelte';
 	import type { Task, TaskStatus, TaskAssignee } from '$lib/types/oracle-task.js';
 
-	const STATUS_ORDER: TaskStatus[] = ['backlog', 'ready', 'in_progress', 'review', 'done'];
+	const STATUS_ORDER: TaskStatus[] = [
+		'backlog',
+		'ready',
+		'in_progress',
+		'pr-open',
+		'review',
+		'done',
+		'deferred'
+	];
 
 	const STATUS_LABELS: Record<TaskStatus, string> = {
 		backlog: 'Backlog',
 		ready: 'Ready',
 		in_progress: 'In progress',
+		'pr-open': 'PR open',
 		review: 'Review',
-		done: 'Done'
+		done: 'Done',
+		deferred: 'Deferred'
 	};
 
 	const ASSIGNEES: TaskAssignee[] = ['nick', 'alfred', 'pennyworth', 'forge'];
