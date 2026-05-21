@@ -29,7 +29,7 @@ export const load: LayoutServerLoad = async ({ depends, cookies, url }) => {
 	depends('oracle:projects');
 	depends('oracle:areas');
 	const [allProjects, areas] = await Promise.all([readAllProjects(), readAllAreas()]);
-	// Hide completed projects from the sidebar — surfaced on /projects/archive instead
 	const projects = allProjects.filter((p) => p.state !== 'completed');
-	return { projects, areas };
+	const archived = allProjects.filter((p) => p.state === 'completed');
+	return { projects, areas, archived };
 };

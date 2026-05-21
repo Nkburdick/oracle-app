@@ -8,9 +8,10 @@
 	interface Props {
 		projects: SidebarItem[];
 		areas: SidebarItem[];
+		archived?: SidebarItem[];
 	}
 
-	const { projects, areas }: Props = $props();
+	const { projects, areas, archived = [] }: Props = $props();
 
 	const currentPath = $derived($page.url.pathname);
 
@@ -63,47 +64,98 @@
 			<span>Dashboard</span>
 		</a>
 
-		<!-- Projects section -->
-		<div class="mt-3 mb-1 px-2">
-			<span class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
-				>[PROJECTS]</span
+		<!-- Projects section (collapsible, default open) -->
+		<details open class="group/projects mt-3" data-testid="sidebar-section-projects">
+			<summary
+				class="flex items-center gap-1 mb-1 px-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:text-foreground"
 			>
-		</div>
+				<span
+					class="text-[10px] text-muted-foreground transition-transform group-open/projects:rotate-90"
+					>▸</span
+				>
+				<span class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+					>[PROJECTS]</span
+				>
+			</summary>
+			<div class="flex flex-col gap-0.5">
+				{#each projects as project (project.slug)}
+					<a
+						href="/projects/{project.slug}"
+						class="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors group
+							{isActiveProject(project.slug)
+							? 'bg-secondary/20 text-foreground border-l-[3px] border-l-primary pl-[5px]'
+							: 'text-muted-foreground hover:text-foreground hover:bg-accent'}"
+						data-testid="sidebar-project"
+					>
+						<StatusIndicator state={project.state} size={6} />
+						<span class="truncate">{project.title}</span>
+					</a>
+				{/each}
+			</div>
+		</details>
 
-		{#each projects as project (project.slug)}
-			<a
-				href="/projects/{project.slug}"
-				class="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors group
-					{isActiveProject(project.slug)
-					? 'bg-secondary/20 text-foreground border-l-[3px] border-l-primary pl-[5px]'
-					: 'text-muted-foreground hover:text-foreground hover:bg-accent'}"
-				data-testid="sidebar-project"
+		<!-- Areas section (collapsible, default open) -->
+		<details open class="group/areas mt-4" data-testid="sidebar-section-areas">
+			<summary
+				class="flex items-center gap-1 mb-1 px-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:text-foreground"
 			>
-				<StatusIndicator state={project.state} size={6} />
-				<span class="truncate">{project.title}</span>
-			</a>
-		{/each}
+				<span
+					class="text-[10px] text-muted-foreground transition-transform group-open/areas:rotate-90"
+					>▸</span
+				>
+				<span class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+					>[AREAS]</span
+				>
+			</summary>
+			<div class="flex flex-col gap-0.5">
+				{#each areas as area (area.slug)}
+					<a
+						href="/areas/{area.slug}"
+						class="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors
+							{isActiveArea(area.slug)
+							? 'bg-secondary/20 text-foreground border-l-[3px] border-l-primary pl-[5px]'
+							: 'text-muted-foreground hover:text-foreground hover:bg-accent'}"
+						data-testid="sidebar-area"
+					>
+						<StatusIndicator state="area" size={6} />
+						<span class="truncate">{area.title}</span>
+					</a>
+				{/each}
+			</div>
+		</details>
 
-		<!-- Areas section -->
-		<div class="mt-4 mb-1 px-2">
-			<span class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
-				>[AREAS]</span
-			>
-		</div>
-
-		{#each areas as area (area.slug)}
-			<a
-				href="/areas/{area.slug}"
-				class="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors
-					{isActiveArea(area.slug)
-					? 'bg-secondary/20 text-foreground border-l-[3px] border-l-primary pl-[5px]'
-					: 'text-muted-foreground hover:text-foreground hover:bg-accent'}"
-				data-testid="sidebar-area"
-			>
-				<StatusIndicator state="area" size={6} />
-				<span class="truncate">{area.title}</span>
-			</a>
-		{/each}
+		<!-- Archive section (collapsible, default closed). Only shown when at
+		     least one project is in the `completed` state. -->
+		{#if archived.length > 0}
+			<details class="group/archive mt-4" data-testid="sidebar-section-archive">
+				<summary
+					class="flex items-center gap-1 mb-1 px-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:text-foreground"
+				>
+					<span
+						class="text-[10px] text-muted-foreground transition-transform group-open/archive:rotate-90"
+						>▸</span
+					>
+					<span class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+						>[ARCHIVE] ({archived.length})</span
+					>
+				</summary>
+				<div class="flex flex-col gap-0.5">
+					{#each archived as project (project.slug)}
+						<a
+							href="/projects/{project.slug}"
+							class="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors opacity-70 hover:opacity-100
+								{isActiveProject(project.slug)
+								? 'bg-secondary/20 text-foreground border-l-[3px] border-l-primary pl-[5px]'
+								: 'text-muted-foreground hover:text-foreground hover:bg-accent'}"
+							data-testid="sidebar-archive-project"
+						>
+							<StatusIndicator state={project.state} size={6} />
+							<span class="truncate">{project.title}</span>
+						</a>
+					{/each}
+				</div>
+			</details>
+		{/if}
 
 		<!-- Spacer -->
 		<div class="flex-1"></div>
