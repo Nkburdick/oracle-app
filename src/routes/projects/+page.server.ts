@@ -4,6 +4,6 @@ import { readAllProjects } from '$lib/server/oracle-reader.js';
 export const load: PageServerLoad = async () => {
 	const all = await readAllProjects();
 	const projects = all.filter((p) => p.state !== 'completed');
-	const archivedCount = all.length - projects.length;
-	return { projects, archivedCount };
+	const archived = all.filter((p) => p.state === 'completed');
+	return { projects, archived };
 };
