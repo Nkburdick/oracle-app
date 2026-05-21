@@ -73,7 +73,7 @@ describe('normalizeProjectFrontmatter', () => {
 	});
 
 	it('handles all valid states', () => {
-		for (const s of ['active', 'planning', 'paused', 'complete'] as const) {
+		for (const s of ['active', 'planning', 'paused', 'proposal', 'completed'] as const) {
 			const fm = normalizeProjectFrontmatter({ state: s }, 'slug');
 			expect(fm.state).toBe(s);
 		}

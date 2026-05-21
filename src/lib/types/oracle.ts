@@ -1,5 +1,5 @@
 /** Project state — drives the sidebar status indicator */
-export type ProjectState = 'active' | 'planning' | 'paused' | 'complete';
+export type ProjectState = 'active' | 'planning' | 'paused' | 'proposal' | 'completed';
 
 /** Frontmatter shape — what we read from PROJECT.md / AREA.md YAML */
 export interface ProjectFrontmatter {

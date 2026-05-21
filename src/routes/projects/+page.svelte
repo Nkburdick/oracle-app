@@ -24,4 +24,14 @@
 			</a>
 		{/each}
 	</div>
+	{#if data.archivedCount > 0}
+		<a
+			href="/projects/archive"
+			class="mt-4 flex items-center gap-2 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent transition-colors"
+			data-testid="projects-archive-link"
+		>
+			<span>📦</span>
+			<span>Archive ({data.archivedCount} completed)</span>
+		</a>
+	{/if}
 </div>

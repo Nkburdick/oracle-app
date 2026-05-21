@@ -28,6 +28,8 @@ export const load: LayoutServerLoad = async ({ depends, cookies, url }) => {
 	// re-runs this loader and refreshes the sidebar live.
 	depends('oracle:projects');
 	depends('oracle:areas');
-	const [projects, areas] = await Promise.all([readAllProjects(), readAllAreas()]);
+	const [allProjects, areas] = await Promise.all([readAllProjects(), readAllAreas()]);
+	// Hide completed projects from the sidebar — surfaced on /projects/archive instead
+	const projects = allProjects.filter((p) => p.state !== 'completed');
 	return { projects, areas };
 };

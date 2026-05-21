@@ -30,13 +30,20 @@
 		style="width: {size}px; height: {size}px;"
 		aria-label="paused"
 	></span>
-{:else if state === 'complete'}
+{:else if state === 'completed'}
 	<!-- checkmark, muted color -->
 	<span
 		class="inline-block text-muted-foreground leading-none flex-shrink-0"
 		style="font-size: {size + 4}px; line-height: 1;"
-		aria-label="complete">✓</span
+		aria-label="completed">✓</span
 	>
+{:else if state === 'proposal'}
+	<!-- dashed outline circle, muted — pre-commitment state -->
+	<span
+		class="inline-block rounded-full border border-dashed border-muted-foreground flex-shrink-0"
+		style="width: {size}px; height: {size}px;"
+		aria-label="proposal"
+	></span>
 {:else if state === 'area'}
 	<!-- outlined square, muted color -->
 	<span
