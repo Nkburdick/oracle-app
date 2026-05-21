@@ -12,8 +12,8 @@
 	const project = $derived(data.project);
 	const fm = $derived(project.frontmatter);
 
-	// Tab is driven by the `?view=` search param (or /tasks sub-route). Status
-	// is the default landing tab — read-first per the 4-tier doc framework.
+	// Tab is driven by the `?view=` search param (or /tasks sub-route). Tasks
+	// is the default landing tab — bare /projects/[slug] redirects to /tasks.
 	const activeTab = $derived(
 		$page.url.pathname.endsWith('/tasks')
 			? 'tasks'
@@ -22,18 +22,18 @@
 					if (view === 'decisions') return 'decisions';
 					if (view === 'sow') return 'sow';
 					if (view === 'artifacts') return 'artifacts';
-					return 'status';
+					if (view === 'status') return 'status';
+					return 'tasks';
 				})()
 	);
 
-	// Tab order: Status (default + read-first) → SOW (slim plan) → Decisions
-	// (history) → Tasks → Artifacts. Status + Decisions always render — empty
-	// state explains the framework when files don't exist.
+	// Tab order: Tasks (default) → Status (read-first per 4-tier framework) →
+	// SOW (slim plan) → Decisions (history) → Artifacts.
 	const tabs = $derived([
-		{ id: 'status', label: 'Status', href: `/projects/${fm.slug}` },
+		{ id: 'tasks', label: 'Tasks', href: `/projects/${fm.slug}/tasks` },
+		{ id: 'status', label: 'Status', href: `/projects/${fm.slug}?view=status` },
 		{ id: 'sow', label: 'SOW', href: `/projects/${fm.slug}?view=sow` },
 		{ id: 'decisions', label: 'Decisions', href: `/projects/${fm.slug}?view=decisions` },
-		{ id: 'tasks', label: 'Tasks', href: `/projects/${fm.slug}/tasks` },
 		{ id: 'artifacts', label: 'Artifacts', href: `/projects/${fm.slug}?view=artifacts` }
 	]);
 </script>
