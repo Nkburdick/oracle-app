@@ -3,21 +3,24 @@
 	import { page } from '$app/stores';
 	import { invalidate } from '$app/navigation';
 	import { ExternalLink } from 'lucide-svelte';
-	import ProjectChats from '$lib/components/ProjectChats.svelte';
 	import PullToRefresh from '$lib/components/PullToRefresh.svelte';
 
 	const { data }: { data: PageData } = $props();
 
 	const project = $derived(data.project);
 	const fm = $derived(project.frontmatter);
-	const chat = $derived(data.chat);
 	const status = $derived(data.status);
 	const decisions = $derived(data.decisions);
 
 	// Tab is driven by the ?view= search param so URLs are shareable and the
-	// browser back/forward buttons work. The layout highlights the active tab
-	// using the same param. Defaults to 'chats' (Loom #32).
-	const view = $derived($page.url.searchParams.get('view') ?? 'chats');
+	// browser back/forward buttons work. Defaults to 'status' — read-first per
+	// the 4-tier doc framework now that the in-app chat panel is gone. Legacy
+	// `?view=chats` URLs fall through to 'status' so saved bookmarks don't 404.
+	const view = $derived(((): string => {
+		const v = $page.url.searchParams.get('view');
+		if (v === 'artifacts' || v === 'sow' || v === 'decisions' || v === 'status') return v;
+		return 'status';
+	})());
 
 	// GitHub create-new-file URLs for empty-state CTAs. The same /edit/ path
 	// works whether the file exists or not — GitHub creates a new file when
@@ -34,18 +37,7 @@
 	}
 </script>
 
-{#if view === 'chats'}
-	<!-- Loom #33: keying on slug forces a fresh ProjectChats mount when navigating
-	     between same-shape routes (/projects/A → /projects/B). -->
-	{#key fm.slug}
-		<ProjectChats
-			slug={fm.slug}
-			initialThreads={chat.threads}
-			initialMessages={chat.initialMessages}
-			loaderError={chat.error}
-		/>
-	{/key}
-{:else if view === 'artifacts'}
+{#if view === 'artifacts'}
 	<!-- Artifacts tab: Phase 2 placeholder -->
 	<div class="p-6 flex items-center justify-center min-h-48">
 		<p class="text-xs text-muted-foreground text-center">
