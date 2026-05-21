@@ -12,27 +12,25 @@
 	const project = $derived(data.project);
 	const fm = $derived(project.frontmatter);
 
-	// Tab is driven by the `?view=` search param (or /tasks sub-route). New views
-	// (status, decisions) added 2026-04-25 alongside the 4-tier doc framework.
+	// Tab is driven by the `?view=` search param (or /tasks sub-route). Status
+	// is the default landing tab — read-first per the 4-tier doc framework.
 	const activeTab = $derived(
 		$page.url.pathname.endsWith('/tasks')
 			? 'tasks'
 			: ((): string => {
 					const view = $page.url.searchParams.get('view');
-					if (view === 'status') return 'status';
 					if (view === 'decisions') return 'decisions';
 					if (view === 'sow') return 'sow';
 					if (view === 'artifacts') return 'artifacts';
-					return 'chats';
+					return 'status';
 				})()
 	);
 
-	// Tab order: Chats (default) → Status (read-first per 4-tier framework) → SOW
-	// (slim plan) → Decisions (history) → Tasks → Artifacts. Status + Decisions
-	// always render — empty state explains the framework when files don't exist.
+	// Tab order: Status (default + read-first) → SOW (slim plan) → Decisions
+	// (history) → Tasks → Artifacts. Status + Decisions always render — empty
+	// state explains the framework when files don't exist.
 	const tabs = $derived([
-		{ id: 'chats', label: 'Chats', href: `/projects/${fm.slug}` },
-		{ id: 'status', label: 'Status', href: `/projects/${fm.slug}?view=status` },
+		{ id: 'status', label: 'Status', href: `/projects/${fm.slug}` },
 		{ id: 'sow', label: 'SOW', href: `/projects/${fm.slug}?view=sow` },
 		{ id: 'decisions', label: 'Decisions', href: `/projects/${fm.slug}?view=decisions` },
 		{ id: 'tasks', label: 'Tasks', href: `/projects/${fm.slug}/tasks` },
@@ -40,14 +38,6 @@
 	]);
 </script>
 
-<!--
-	Mobile chat-thread pages render a full-screen takeover (via their own
-	root div having `data-chat-thread`). When that's active on mobile, this
-	layout's project header + tab bar are hidden via `app.css`'s `:has()`
-	rule so the thread page owns the whole viewport. Desktop (md+) keeps
-	the project chrome visible even when a thread is selected — the
-	two-panel layout needs it.
--->
 <div class="project-layout flex flex-col h-full">
 	<!-- Page header — extends background into safe-area notch band; cancels main's pt-safe-area to avoid double-padding -->
 	<header

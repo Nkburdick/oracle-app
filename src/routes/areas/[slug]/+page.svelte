@@ -1,28 +1,24 @@
 <script lang="ts">
 	import type { PageData } from './$types.js';
 	import { ExternalLink } from 'lucide-svelte';
-	import ProjectChats from '$lib/components/ProjectChats.svelte';
 
 	const { data }: { data: PageData } = $props();
 
 	const area = $derived(data.area);
 	const fm = $derived(area.frontmatter);
-	const chat = $derived(data.chat);
 
-	// Loom #32: default to Chats tab (matches projects page behavior).
-	//
 	// SvelteKit reuses this +page.svelte component instance when navigating
 	// between /areas/A → /areas/B (same route shape), so $state initializers
 	// only run once on first mount. Without an explicit reset, switching
 	// areas would carry forward whatever tab the user last clicked.
 	// CodeRabbit finding on PR #36.
-	type Tab = 'chats' | 'artifacts' | 'sow';
-	let activeTab: Tab = $state('chats');
+	type Tab = 'sow' | 'artifacts';
+	let activeTab: Tab = $state('sow');
 
 	$effect(() => {
 		// Read the slug so the effect re-runs on slug navigation
 		fm.slug;
-		activeTab = 'chats';
+		activeTab = 'sow';
 	});
 </script>
 
@@ -52,14 +48,14 @@
 
 	<!-- Tab bar -->
 	<div class="flex border-b border-border px-6 flex-shrink-0">
-		{#each ['chats', 'artifacts', 'sow'] as const as tab}
+		{#each ['sow', 'artifacts'] as const as tab}
 			<button
 				onclick={() => {
 					activeTab = tab;
 				}}
 				class="px-4 py-2.5 text-sm transition-colors relative capitalize
 					{activeTab === tab ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}"
-				title={tab !== 'sow' ? 'Phase 2' : undefined}
+				title={tab === 'artifacts' ? 'Phase 2' : undefined}
 			>
 				{tab}
 				{#if activeTab === tab}
@@ -71,18 +67,7 @@
 
 	<!-- Tab content -->
 	<div class="flex-1 overflow-y-auto">
-		{#if activeTab === 'chats'}
-			{#key fm.slug}
-				<ProjectChats
-					slug={fm.slug}
-					initialThreads={chat.threads}
-					initialMessages={chat.initialMessages}
-					loaderError={chat.error}
-					apiBasePath="/api/areas"
-					routePrefix="areas"
-				/>
-			{/key}
-		{:else if activeTab === 'artifacts'}
+		{#if activeTab === 'artifacts'}
 			<div class="p-6 flex items-center justify-center min-h-48">
 				<p class="text-xs text-muted-foreground">Artifacts — Phase 2</p>
 			</div>
