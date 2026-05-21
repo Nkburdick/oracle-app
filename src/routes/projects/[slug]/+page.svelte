@@ -16,11 +16,13 @@
 	// browser back/forward buttons work. Defaults to 'status' — read-first per
 	// the 4-tier doc framework now that the in-app chat panel is gone. Legacy
 	// `?view=chats` URLs fall through to 'status' so saved bookmarks don't 404.
-	const view = $derived(((): string => {
-		const v = $page.url.searchParams.get('view');
-		if (v === 'artifacts' || v === 'sow' || v === 'decisions' || v === 'status') return v;
-		return 'status';
-	})());
+	const view = $derived(
+		((): string => {
+			const v = $page.url.searchParams.get('view');
+			if (v === 'artifacts' || v === 'sow' || v === 'decisions' || v === 'status') return v;
+			return 'status';
+		})()
+	);
 
 	// GitHub create-new-file URLs for empty-state CTAs. The same /edit/ path
 	// works whether the file exists or not — GitHub creates a new file when
