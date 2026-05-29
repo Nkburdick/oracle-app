@@ -44,6 +44,13 @@
 		style="width: {size}px; height: {size}px;"
 		aria-label="proposal"
 	></span>
+{:else if state === 'deferred'}
+	<!-- hollow circle, muted — parked but not lost -->
+	<span
+		class="inline-block rounded-full border border-muted-foreground flex-shrink-0"
+		style="width: {size}px; height: {size}px;"
+		aria-label="deferred"
+	></span>
 {:else if state === 'area'}
 	<!-- outlined square, muted color -->
 	<span

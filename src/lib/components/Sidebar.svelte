@@ -7,11 +7,12 @@
 
 	interface Props {
 		projects: SidebarItem[];
+		deferred?: SidebarItem[];
 		areas: SidebarItem[];
 		archived?: SidebarItem[];
 	}
 
-	const { projects, areas, archived = [] }: Props = $props();
+	const { projects, deferred = [], areas, archived = [] }: Props = $props();
 
 	const currentPath = $derived($page.url.pathname);
 
@@ -74,7 +75,7 @@
 					>▸</span
 				>
 				<span class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
-					>[PROJECTS]</span
+					>[ACTIVE PROJECTS]</span
 				>
 			</summary>
 			<div class="flex flex-col gap-0.5">
@@ -93,6 +94,39 @@
 				{/each}
 			</div>
 		</details>
+
+		<!-- Deferred Projects section (collapsible, default closed). Parked-but-not-lost
+		     work, mirrors the Todoist Active/Deferred split. Only shown when non-empty. -->
+		{#if deferred.length > 0}
+			<details class="group/deferred mt-4" data-testid="sidebar-section-deferred">
+				<summary
+					class="flex items-center gap-1 mb-1 px-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:text-foreground"
+				>
+					<span
+						class="text-[10px] text-muted-foreground transition-transform group-open/deferred:rotate-90"
+						>▸</span
+					>
+					<span class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+						>[DEFERRED PROJECTS] ({deferred.length})</span
+					>
+				</summary>
+				<div class="flex flex-col gap-0.5">
+					{#each deferred as project (project.slug)}
+						<a
+							href="/projects/{project.slug}"
+							class="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors opacity-70 hover:opacity-100
+								{isActiveProject(project.slug)
+								? 'bg-secondary/20 text-foreground border-l-[3px] border-l-primary pl-[5px]'
+								: 'text-muted-foreground hover:text-foreground hover:bg-accent'}"
+							data-testid="sidebar-deferred-project"
+						>
+							<StatusIndicator state={project.state} size={6} />
+							<span class="truncate">{project.title}</span>
+						</a>
+					{/each}
+				</div>
+			</details>
+		{/if}
 
 		<!-- Areas section (collapsible, default open) -->
 		<details open class="group/areas mt-4" data-testid="sidebar-section-areas">

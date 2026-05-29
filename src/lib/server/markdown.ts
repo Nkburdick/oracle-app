@@ -46,7 +46,14 @@ export function normalizeProjectFrontmatter(
 	data: Record<string, unknown>,
 	slug: string
 ): ProjectFrontmatter {
-	const validStates: ProjectState[] = ['active', 'planning', 'paused', 'proposal', 'completed'];
+	const validStates: ProjectState[] = [
+		'active',
+		'planning',
+		'paused',
+		'proposal',
+		'deferred',
+		'completed'
+	];
 	const rawState = String(data.state ?? 'active');
 	const state: ProjectState = validStates.includes(rawState as ProjectState)
 		? (rawState as ProjectState)

@@ -64,7 +64,12 @@
 
 <div class="app-shell flex h-screen overflow-hidden bg-background text-foreground">
 	<!-- Desktop sidebar -->
-	<Sidebar projects={data.projects} areas={data.areas} archived={data.archived} />
+	<Sidebar
+		projects={data.projects}
+		deferred={data.deferred}
+		areas={data.areas}
+		archived={data.archived}
+	/>
 
 	<!-- Main content area — safe-area-inset-top for standalone PWA on notch devices -->
 	<main class="app-main flex-1 overflow-y-auto pt-safe-area pb-16 lg:pb-0">

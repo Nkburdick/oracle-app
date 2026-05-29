@@ -29,7 +29,8 @@ export const load: LayoutServerLoad = async ({ depends, cookies, url }) => {
 	depends('oracle:projects');
 	depends('oracle:areas');
 	const [allProjects, areas] = await Promise.all([readAllProjects(), readAllAreas()]);
-	const projects = allProjects.filter((p) => p.state !== 'completed');
+	const projects = allProjects.filter((p) => p.state !== 'completed' && p.state !== 'deferred');
+	const deferred = allProjects.filter((p) => p.state === 'deferred');
 	const archived = allProjects.filter((p) => p.state === 'completed');
-	return { projects, areas, archived };
+	return { projects, deferred, areas, archived };
 };
